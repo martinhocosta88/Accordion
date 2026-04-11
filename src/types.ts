@@ -1,5 +1,8 @@
+export type ThemeName = 'accordion' | 'carbon' | 'midnight' | 'light';
+
 export interface AppConfig {
   repos: string[];
+  theme: ThemeName;
 }
 
 export interface SubDirectory {
@@ -12,6 +15,7 @@ export interface ElectronAPI {
     get(): Promise<AppConfig>;
     addRepo(path: string): Promise<AppConfig>;
     removeRepo(path: string): Promise<AppConfig>;
+    setTheme(theme: string): Promise<AppConfig>;
   };
   dialog: {
     selectDirectory(): Promise<string | null>;

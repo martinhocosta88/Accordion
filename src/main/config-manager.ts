@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import type { AppConfig } from '../types';
 
-const defaultConfig = (): AppConfig => ({ repos: [] });
+const defaultConfig = (): AppConfig => ({ repos: [], theme: 'accordion' });
 
 export function readConfig(configPath: string): AppConfig {
   try {
@@ -15,6 +15,9 @@ export function readConfig(configPath: string): AppConfig {
     if (!Array.isArray(config.repos)) {
       writeConfig(configPath, defaultConfig());
       return defaultConfig();
+    }
+    if (!config.theme || !['accordion', 'carbon', 'midnight', 'light'].includes(config.theme)) {
+      config.theme = 'accordion';
     }
     return config;
   } catch {
@@ -43,6 +46,13 @@ export function addRepo(configPath: string, repoPath: string): AppConfig {
 export function removeRepo(configPath: string, repoPath: string): AppConfig {
   const config = readConfig(configPath);
   config.repos = config.repos.filter((r) => r !== repoPath);
+  writeConfig(configPath, config);
+  return config;
+}
+
+export function setTheme(configPath: string, theme: string): AppConfig {
+  const config = readConfig(configPath);
+  config.theme = theme as AppConfig['theme'];
   writeConfig(configPath, config);
   return config;
 }

@@ -6,6 +6,7 @@ const api: ElectronAPI = {
     get: () => ipcRenderer.invoke('config:get'),
     addRepo: (path: string) => ipcRenderer.invoke('config:add-repo', path),
     removeRepo: (path: string) => ipcRenderer.invoke('config:remove-repo', path),
+    setTheme: (theme: string) => ipcRenderer.invoke('config:set-theme', theme),
   },
   dialog: {
     selectDirectory: () => ipcRenderer.invoke('dialog:select-directory'),

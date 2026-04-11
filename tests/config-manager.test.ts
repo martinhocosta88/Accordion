@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { readConfig, writeConfig, addRepo, removeRepo } from '../src/main/config-manager';
+import { readConfig, writeConfig, addRepo, removeRepo, setTheme } from '../src/main/config-manager';
 
 describe('config-manager', () => {
   let tempDir: string;
@@ -20,7 +20,7 @@ describe('config-manager', () => {
   describe('readConfig', () => {
     it('returns default config when file does not exist', () => {
       const config = readConfig(configPath);
-      expect(config).toEqual({ repos: [] });
+      expect(config).toEqual({ repos: [], theme: 'accordion' });
     });
 
     it('creates config file when it does not exist', () => {
@@ -29,28 +29,39 @@ describe('config-manager', () => {
     });
 
     it('reads existing config file', () => {
-      const expected = { repos: ['C:\\Repos\\test'] };
-      fs.writeFileSync(configPath, JSON.stringify(expected));
+      fs.writeFileSync(configPath, JSON.stringify({ repos: ['C:\\Repos\\test'], theme: 'carbon' }));
       const config = readConfig(configPath);
-      expect(config).toEqual(expected);
+      expect(config).toEqual({ repos: ['C:\\Repos\\test'], theme: 'carbon' });
     });
 
     it('returns default config when file is corrupted JSON', () => {
       fs.writeFileSync(configPath, 'not json');
       const config = readConfig(configPath);
-      expect(config).toEqual({ repos: [] });
+      expect(config).toEqual({ repos: [], theme: 'accordion' });
     });
 
     it('returns default config when repos is not an array', () => {
       fs.writeFileSync(configPath, JSON.stringify({ repos: 'bad' }));
       const config = readConfig(configPath);
-      expect(config).toEqual({ repos: [] });
+      expect(config).toEqual({ repos: [], theme: 'accordion' });
+    });
+
+    it('returns default config with theme when file has no theme field', () => {
+      fs.writeFileSync(configPath, JSON.stringify({ repos: ['C:\\test'] }));
+      const config = readConfig(configPath);
+      expect(config.theme).toBe('accordion');
+    });
+
+    it('preserves existing theme from config file', () => {
+      fs.writeFileSync(configPath, JSON.stringify({ repos: [], theme: 'carbon' }));
+      const config = readConfig(configPath);
+      expect(config.theme).toBe('carbon');
     });
   });
 
   describe('writeConfig', () => {
     it('writes config to file', () => {
-      const config = { repos: ['C:\\Repos\\test'] };
+      const config = { repos: ['C:\\Repos\\test'], theme: 'accordion' as const };
       writeConfig(configPath, config);
       const data = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
       expect(data).toEqual(config);
@@ -58,7 +69,7 @@ describe('config-manager', () => {
 
     it('creates parent directories if they do not exist', () => {
       const nestedPath = path.join(tempDir, 'a', 'b', 'config.json');
-      writeConfig(nestedPath, { repos: [] });
+      writeConfig(nestedPath, { repos: [], theme: 'accordion' });
       expect(fs.existsSync(nestedPath)).toBe(true);
     });
   });
@@ -92,7 +103,21 @@ describe('config-manager', () => {
 
     it('handles removing a path that does not exist', () => {
       const config = removeRepo(configPath, 'C:\\Repos\\nonexistent');
-      expect(config).toEqual({ repos: [] });
+      expect(config.repos).toEqual([]);
+    });
+  });
+
+  describe('setTheme', () => {
+    it('sets the theme in config', () => {
+      const config = setTheme(configPath, 'midnight');
+      expect(config.theme).toBe('midnight');
+    });
+
+    it('preserves repos when setting theme', () => {
+      addRepo(configPath, 'C:\\Repos\\a');
+      const config = setTheme(configPath, 'light');
+      expect(config.repos).toEqual(['C:\\Repos\\a']);
+      expect(config.theme).toBe('light');
     });
   });
 });

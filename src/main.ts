@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import { execFile } from 'child_process';
-import { readConfig, addRepo, removeRepo } from './main/config-manager';
+import { readConfig, addRepo, removeRepo, setTheme } from './main/config-manager';
 import {
   createPty,
   writePty,
@@ -51,6 +51,9 @@ ipcMain.handle('config:add-repo', (_event, repoPath: string) =>
 );
 ipcMain.handle('config:remove-repo', (_event, repoPath: string) =>
   removeRepo(CONFIG_PATH, repoPath)
+);
+ipcMain.handle('config:set-theme', (_event, theme: string) =>
+  setTheme(CONFIG_PATH, theme)
 );
 
 // Dialog IPC handler
