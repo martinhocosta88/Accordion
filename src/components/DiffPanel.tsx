@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface DiffFile {
   path: string;
@@ -25,7 +25,6 @@ function parseDiff(raw: string): DiffFile[] {
 
   for (const chunk of fileChunks) {
     const lines = chunk.split('\n');
-    // Extract file path from "a/... b/..."
     const headerMatch = lines[0].match(/b\/(.+)/);
     const filePath = headerMatch ? headerMatch[1] : 'unknown';
 
@@ -59,16 +58,31 @@ function parseDiff(raw: string): DiffFile[] {
   return files;
 }
 
+// Key for identifying a specific diff line for commenting
+interface CommentTarget {
+  filePath: string;
+  hunkIndex: number;
+  lineIndex: number;
+}
+
+function sameTarget(a: CommentTarget | null, b: CommentTarget): boolean {
+  return !!a && a.filePath === b.filePath && a.hunkIndex === b.hunkIndex && a.lineIndex === b.lineIndex;
+}
+
 interface DiffPanelProps {
   cwd: string;
   label: string;
+  ptyId: string;
   onClose: () => void;
 }
 
-export function DiffPanel({ cwd, label, onClose }: DiffPanelProps) {
+export function DiffPanel({ cwd, label, ptyId, onClose }: DiffPanelProps) {
   const [files, setFiles] = useState<DiffFile[]>([]);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const [commentTarget, setCommentTarget] = useState<CommentTarget | null>(null);
+  const [commentText, setCommentText] = useState('');
+  const commentInputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -77,6 +91,13 @@ export function DiffPanel({ cwd, label, onClose }: DiffPanelProps) {
       setLoading(false);
     });
   }, [cwd]);
+
+  // Focus the comment input when it appears
+  useEffect(() => {
+    if (commentTarget && commentInputRef.current) {
+      commentInputRef.current.focus();
+    }
+  }, [commentTarget]);
 
   const toggleFile = (path: string) => {
     setExpanded((prev) => {
@@ -92,10 +113,58 @@ export function DiffPanel({ cwd, label, onClose }: DiffPanelProps) {
 
   const refresh = () => {
     setLoading(true);
+    setCommentTarget(null);
     window.electronAPI.git.getDiff(cwd).then((raw) => {
       setFiles(parseDiff(raw));
       setLoading(false);
     });
+  };
+
+  const handleLineClick = (filePath: string, hunkIndex: number, lineIndex: number) => {
+    const target = { filePath, hunkIndex, lineIndex };
+    if (sameTarget(commentTarget, target)) {
+      setCommentTarget(null);
+      setCommentText('');
+    } else {
+      setCommentTarget(target);
+      setCommentText('');
+    }
+  };
+
+  const sendComment = () => {
+    if (!commentTarget || !commentText.trim()) return;
+
+    const file = files.find((f) => f.path === commentTarget.filePath);
+    if (!file) return;
+
+    const hunk = file.hunks[commentTarget.hunkIndex];
+    if (!hunk) return;
+
+    const line = hunk.lines[commentTarget.lineIndex];
+    if (!line) return;
+
+    const prefix = line.type === 'add' ? '+' : '-';
+    const message = [
+      `In ${file.path}, regarding this change:`,
+      `${prefix} ${line.content}`,
+      ``,
+      commentText.trim(),
+    ].join('\n');
+
+    window.electronAPI.pty.write(ptyId, message + '\n');
+
+    setCommentTarget(null);
+    setCommentText('');
+  };
+
+  const handleCommentKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendComment();
+    } else if (e.key === 'Escape') {
+      setCommentTarget(null);
+      setCommentText('');
+    }
   };
 
   return (
@@ -138,26 +207,67 @@ export function DiffPanel({ cwd, label, onClose }: DiffPanelProps) {
                 </button>
                 {isExpanded && (
                   <div className="diff-file-content">
-                    {file.hunks.map((hunk, i) => (
-                      <div key={i} className="diff-hunk">
+                    {file.hunks.map((hunk, hi) => (
+                      <div key={hi} className="diff-hunk">
                         <div className="diff-hunk-header">{hunk.header}</div>
-                        {hunk.lines.map((line, j) => (
-                          <div
-                            key={j}
-                            className={`diff-line diff-line-${line.type}`}
-                          >
-                            <span className="diff-line-prefix">
-                              {line.type === 'add'
-                                ? '+'
-                                : line.type === 'remove'
-                                  ? '-'
-                                  : ' '}
-                            </span>
-                            <span className="diff-line-content">
-                              {line.content}
-                            </span>
-                          </div>
-                        ))}
+                        {hunk.lines.map((line, li) => {
+                          const isClickable = line.type !== 'context';
+                          const isActive = sameTarget(commentTarget, {
+                            filePath: file.path,
+                            hunkIndex: hi,
+                            lineIndex: li,
+                          });
+                          return (
+                            <div key={li}>
+                              <div
+                                className={`diff-line diff-line-${line.type}${isClickable ? ' diff-line-clickable' : ''}${isActive ? ' diff-line-active' : ''}`}
+                                onClick={isClickable ? () => handleLineClick(file.path, hi, li) : undefined}
+                              >
+                                <span className="diff-line-prefix">
+                                  {line.type === 'add'
+                                    ? '+'
+                                    : line.type === 'remove'
+                                      ? '-'
+                                      : ' '}
+                                </span>
+                                <span className="diff-line-content">
+                                  {line.content}
+                                </span>
+                              </div>
+                              {isActive && (
+                                <div className="diff-comment">
+                                  <textarea
+                                    ref={commentInputRef}
+                                    className="diff-comment-input"
+                                    placeholder="Type feedback for Claude... (Enter to send, Esc to cancel)"
+                                    value={commentText}
+                                    onChange={(e) => setCommentText(e.target.value)}
+                                    onKeyDown={handleCommentKeyDown}
+                                    rows={2}
+                                  />
+                                  <div className="diff-comment-actions">
+                                    <button
+                                      className="diff-comment-send"
+                                      onClick={sendComment}
+                                      disabled={!commentText.trim()}
+                                    >
+                                      Send to Claude
+                                    </button>
+                                    <button
+                                      className="diff-comment-cancel"
+                                      onClick={() => {
+                                        setCommentTarget(null);
+                                        setCommentText('');
+                                      }}
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     ))}
                   </div>

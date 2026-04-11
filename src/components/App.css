@@ -857,6 +857,87 @@ body {
   color: var(--text-tertiary);
 }
 
+.diff-line-clickable {
+  cursor: pointer;
+}
+
+.diff-line-clickable:hover {
+  filter: brightness(1.3);
+}
+
+.diff-line-active {
+  outline: 1px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.diff-comment {
+  padding: 6px 8px;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.diff-comment-input {
+  width: 100%;
+  background: var(--bg-terminal);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 12px;
+  resize: vertical;
+  outline: none;
+}
+
+.diff-comment-input:focus {
+  border-color: var(--accent);
+}
+
+.diff-comment-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.diff-comment-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+  justify-content: flex-end;
+}
+
+.diff-comment-send {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.diff-comment-send:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.diff-comment-send:hover:not(:disabled) {
+  filter: brightness(1.15);
+}
+
+.diff-comment-cancel {
+  background: none;
+  color: var(--text-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.diff-comment-cancel:hover {
+  color: var(--text-secondary);
+}
+
 /* === Scrollbar === */
 ::-webkit-scrollbar {
   width: 8px;

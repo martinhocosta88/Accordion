@@ -60,6 +60,7 @@ export function TerminalGrid({
             <DiffPanel
               cwd={terminal.cwd}
               label={terminal.label}
+              ptyId={terminal.ptyId}
               onClose={onCloseDiff}
             />
           </div>
