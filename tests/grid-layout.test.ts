@@ -29,4 +29,13 @@ describe('computeGridLayout', () => {
   it('returns 3+3 for 6 terminals', () => {
     expect(computeGridLayout(6)).toEqual({ row1Count: 3, row2Count: 3 });
   });
+
+  it('clamps to 3+3 for counts above 6', () => {
+    expect(computeGridLayout(7)).toEqual({ row1Count: 3, row2Count: 3 });
+    expect(computeGridLayout(100)).toEqual({ row1Count: 3, row2Count: 3 });
+  });
+
+  it('returns empty layout for negative counts', () => {
+    expect(computeGridLayout(-1)).toEqual({ row1Count: 0, row2Count: 0 });
+  });
 });

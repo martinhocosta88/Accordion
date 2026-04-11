@@ -1,4 +1,4 @@
-import React from 'react';
+import { useEffect } from 'react';
 import type { AppConfig } from '../types';
 
 interface SettingsDialogProps {
@@ -12,6 +12,14 @@ export function SettingsDialog({
   onClose,
   onConfigChange,
 }: SettingsDialogProps) {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   const handleAdd = async () => {
     const selectedPath = await window.electronAPI.dialog.selectDirectory();
     if (selectedPath) {

@@ -28,6 +28,8 @@ function createWindow() {
     backgroundColor: '#1a1a2e',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true,
     },
   });
 
@@ -59,8 +61,16 @@ ipcMain.handle('dialog:select-directory', async () => {
   return result.filePaths[0];
 });
 
+// Validate that a path is within a configured repo root
+function isPathWithinRepos(targetPath: string): boolean {
+  const config = readConfig(CONFIG_PATH);
+  const normalized = path.resolve(targetPath);
+  return config.repos.some((repo) => normalized.startsWith(path.resolve(repo)));
+}
+
 // Filesystem IPC handlers
 ipcMain.handle('fs:list-subdirectories', async (_event, dirPath: string) => {
+  if (!isPathWithinRepos(dirPath)) return [];
   try {
     const entries = await fs.promises.readdir(dirPath, { withFileTypes: true });
     return entries
@@ -72,6 +82,7 @@ ipcMain.handle('fs:list-subdirectories', async (_event, dirPath: string) => {
 });
 
 ipcMain.handle('fs:directory-exists', async (_event, dirPath: string) => {
+  if (!isPathWithinRepos(dirPath)) return false;
   try {
     const stat = await fs.promises.stat(dirPath);
     return stat.isDirectory();

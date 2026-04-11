@@ -1,4 +1,3 @@
-import React from 'react';
 import { TerminalPanel } from './TerminalPanel';
 import { computeGridLayout } from '../lib/grid-layout';
 import type { TerminalState } from '../hooks/useTerminals';

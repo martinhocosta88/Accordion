@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
@@ -72,8 +72,10 @@ export function TerminalPanel({
     };
   }, [ptyId]);
 
-  // Re-fit on maximize/restore and window resize
+  // Re-fit on container size changes (grid reflow, maximize, window resize)
   useEffect(() => {
+    if (!containerRef.current) return;
+
     const refit = () => {
       if (fitAddonRef.current && terminalRef.current) {
         fitAddonRef.current.fit();
@@ -85,15 +87,15 @@ export function TerminalPanel({
       }
     };
 
-    // Delay to let CSS layout update after maximize/restore
-    const timeout = setTimeout(refit, 50);
-    window.addEventListener('resize', refit);
+    const observer = new ResizeObserver(() => {
+      requestAnimationFrame(refit);
+    });
+    observer.observe(containerRef.current);
 
     return () => {
-      clearTimeout(timeout);
-      window.removeEventListener('resize', refit);
+      observer.disconnect();
     };
-  }, [ptyId, isMaximized]);
+  }, [ptyId]);
 
   return (
     <div className="terminal-panel">
