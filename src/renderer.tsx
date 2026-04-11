@@ -1,2 +1,11 @@
-const root = document.getElementById('root')!;
-root.innerHTML = '<h1 style="color:white;font-family:sans-serif;padding:40px;">Accordion is running.</h1>';
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import App from './components/App';
+import './components/App.css';
+
+const root = createRoot(document.getElementById('root')!);
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
