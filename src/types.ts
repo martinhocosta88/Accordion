@@ -26,6 +26,7 @@ export interface ElectronAPI {
   };
   git: {
     getBranch(dirPath: string): Promise<string | null>;
+    getDiff(dirPath: string): Promise<string>;
   };
   pty: {
     create(cwd: string): Promise<string>;

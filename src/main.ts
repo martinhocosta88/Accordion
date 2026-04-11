@@ -107,6 +107,34 @@ ipcMain.handle('git:get-branch', async (_event, dirPath: string) => {
   });
 });
 
+ipcMain.handle('git:get-diff', async (_event, dirPath: string) => {
+  if (!isPathWithinRepos(dirPath)) return '';
+
+  const run = (args: string[]): Promise<string> =>
+    new Promise((resolve) => {
+      execFile('git', args, { cwd: dirPath, maxBuffer: 1024 * 1024 }, (err, stdout) => {
+        resolve(err ? '' : stdout);
+      });
+    });
+
+  // Tracked file changes
+  const trackedDiff = await run(['diff']);
+
+  // Untracked files
+  const untrackedList = await run(['ls-files', '--others', '--exclude-standard']);
+  let untrackedDiff = '';
+  for (const file of untrackedList.split('\n').filter(Boolean)) {
+    const content = await run(['diff', '--no-index', '--', '/dev/null', file]);
+    // Rewrite header so the parser sees a clean path
+    untrackedDiff += content.replace(
+      /^diff --git .+$/m,
+      `diff --git a/${file} b/${file}`
+    ).replace(/^(\+\+\+) .+$/m, `+++ b/${file}`) + '\n';
+  }
+
+  return trackedDiff + untrackedDiff;
+});
+
 // PTY IPC handlers
 ipcMain.handle('pty:create', (_event, cwd: string) => {
   if (!mainWindow) throw new Error('No window available');

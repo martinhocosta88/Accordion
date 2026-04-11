@@ -19,6 +19,7 @@ const api: ElectronAPI = {
   },
   git: {
     getBranch: (dirPath: string) => ipcRenderer.invoke('git:get-branch', dirPath),
+    getDiff: (dirPath: string) => ipcRenderer.invoke('git:get-diff', dirPath),
   },
   pty: {
     create: (cwd: string) => ipcRenderer.invoke('pty:create', cwd),

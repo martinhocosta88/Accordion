@@ -15,6 +15,7 @@ interface TerminalPanelProps {
   onClose: () => void;
   onToggleMaximize: () => void;
   onFocus: () => void;
+  onShowDiff: () => void;
 }
 
 export function TerminalPanel({
@@ -27,6 +28,7 @@ export function TerminalPanel({
   onClose,
   onToggleMaximize,
   onFocus,
+  onShowDiff,
 }: TerminalPanelProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const terminalRef = useRef<Terminal | null>(null);
@@ -117,6 +119,13 @@ export function TerminalPanel({
           {branch && <span className="terminal-branch">{'\u2387'} {branch}</span>}
         </span>
         <div className="terminal-controls">
+          <button
+            className="terminal-btn"
+            onClick={onShowDiff}
+            title="Show diff"
+          >
+            {'\u0394'}
+          </button>
           <button
             className="terminal-btn"
             onClick={onToggleMaximize}

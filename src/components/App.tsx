@@ -8,6 +8,8 @@ import type { AppConfig } from '../types';
 export default function App() {
   const [config, setConfig] = useState<AppConfig>({ repos: [], theme: 'accordion' as const });
   const [showSettings, setShowSettings] = useState(false);
+  const [sideCollapsed, setSideCollapsed] = useState(false);
+  const [diffTerminalId, setDiffTerminalId] = useState<string | null>(null);
   const {
     terminals,
     maximizedId,
@@ -39,6 +41,17 @@ export default function App() {
     document.documentElement.setAttribute('data-theme', newConfig.theme);
   };
 
+  // Toggle diff: clicking the same terminal closes it, clicking a different one switches
+  const handleShowDiff = (terminalId: string) => {
+    setDiffTerminalId((prev) => (prev === terminalId ? null : terminalId));
+  };
+
+  // Close diff if the terminal it belongs to is closed
+  const handleCloseTerminal = (id: string) => {
+    if (diffTerminalId === id) setDiffTerminalId(null);
+    closeTerminal(id);
+  };
+
   return (
     <div className="app">
       <SidePane
@@ -47,14 +60,19 @@ export default function App() {
         onOpenSettings={() => setShowSettings(true)}
         canAddTerminal={canAdd}
         activeTerminalPaths={terminals.map((t) => t.cwd)}
+        collapsed={sideCollapsed}
+        onToggleCollapse={() => setSideCollapsed((c) => !c)}
       />
       <TerminalGrid
         terminals={terminals}
         maximizedId={maximizedId}
         focusedId={focusedId}
-        onClose={closeTerminal}
+        diffTerminalId={diffTerminalId}
+        onClose={handleCloseTerminal}
         onToggleMaximize={toggleMaximize}
         onFocus={focusTerminal}
+        onShowDiff={handleShowDiff}
+        onCloseDiff={() => setDiffTerminalId(null)}
         theme={config.theme}
       />
       {showSettings && (

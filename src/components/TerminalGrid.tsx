@@ -1,4 +1,5 @@
 import { TerminalPanel } from './TerminalPanel';
+import { DiffPanel } from './DiffPanel';
 import { computeGridLayout } from '../lib/grid-layout';
 import type { TerminalState } from '../hooks/useTerminals';
 import type { ThemeName } from '../types';
@@ -7,9 +8,12 @@ interface TerminalGridProps {
   terminals: TerminalState[];
   maximizedId: string | null;
   focusedId: string | null;
+  diffTerminalId: string | null;
   onClose: (id: string) => void;
   onToggleMaximize: (id: string) => void;
   onFocus: (id: string) => void;
+  onShowDiff: (terminalId: string) => void;
+  onCloseDiff: () => void;
   theme: ThemeName;
 }
 
@@ -17,9 +21,12 @@ export function TerminalGrid({
   terminals,
   maximizedId,
   focusedId,
+  diffTerminalId,
   onClose,
   onToggleMaximize,
   onFocus,
+  onShowDiff,
+  onCloseDiff,
   theme,
 }: TerminalGridProps) {
   if (terminals.length === 0) {
@@ -28,6 +35,37 @@ export function TerminalGrid({
         <p>Select a repository from the side pane to open a terminal.</p>
       </div>
     );
+  }
+
+  // Diff mode: show only the target terminal + diff panel, each taking half
+  if (diffTerminalId) {
+    const terminal = terminals.find((t) => t.id === diffTerminalId);
+    if (terminal) {
+      return (
+        <div className="terminal-grid">
+          <div className="grid-row">
+            <TerminalPanel
+              key={terminal.id}
+              ptyId={terminal.ptyId}
+              label={terminal.label}
+              branch={terminal.branch}
+              theme={theme}
+              isMaximized={false}
+              isFocused={true}
+              onClose={() => onClose(terminal.id)}
+              onToggleMaximize={() => onToggleMaximize(terminal.id)}
+              onFocus={() => onFocus(terminal.id)}
+              onShowDiff={() => onShowDiff(terminal.id)}
+            />
+            <DiffPanel
+              cwd={terminal.cwd}
+              label={terminal.label}
+              onClose={onCloseDiff}
+            />
+          </div>
+        </div>
+      );
+    }
   }
 
   // Maximized mode: show only the maximized terminal
@@ -48,6 +86,7 @@ export function TerminalGrid({
               onClose={() => onClose(terminal.id)}
               onToggleMaximize={() => onToggleMaximize(terminal.id)}
               onFocus={() => onFocus(terminal.id)}
+              onShowDiff={() => onShowDiff(terminal.id)}
             />
           </div>
         </div>
@@ -75,6 +114,7 @@ export function TerminalGrid({
             onClose={() => onClose(t.id)}
             onToggleMaximize={() => onToggleMaximize(t.id)}
             onFocus={() => onFocus(t.id)}
+            onShowDiff={() => onShowDiff(t.id)}
           />
         ))}
       </div>
@@ -92,6 +132,7 @@ export function TerminalGrid({
               onClose={() => onClose(t.id)}
               onToggleMaximize={() => onToggleMaximize(t.id)}
               onFocus={() => onFocus(t.id)}
+              onShowDiff={() => onShowDiff(t.id)}
             />
           ))}
         </div>
