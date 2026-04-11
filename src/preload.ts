@@ -1,1 +1,47 @@
-// Preload script — will be expanded in Task 5
+import { contextBridge, ipcRenderer } from 'electron';
+import type { ElectronAPI } from './types';
+
+const api: ElectronAPI = {
+  config: {
+    get: () => ipcRenderer.invoke('config:get'),
+    addRepo: (path: string) => ipcRenderer.invoke('config:add-repo', path),
+    removeRepo: (path: string) => ipcRenderer.invoke('config:remove-repo', path),
+  },
+  dialog: {
+    selectDirectory: () => ipcRenderer.invoke('dialog:select-directory'),
+  },
+  fs: {
+    listSubdirectories: (dirPath: string) =>
+      ipcRenderer.invoke('fs:list-subdirectories', dirPath),
+    directoryExists: (dirPath: string) =>
+      ipcRenderer.invoke('fs:directory-exists', dirPath),
+  },
+  pty: {
+    create: (cwd: string) => ipcRenderer.invoke('pty:create', cwd),
+    write: (id: string, data: string) => ipcRenderer.send('pty:write', id, data),
+    resize: (id: string, cols: number, rows: number) =>
+      ipcRenderer.send('pty:resize', id, cols, rows),
+    close: (id: string) => ipcRenderer.send('pty:close', id),
+    onData: (callback: (id: string, data: string) => void) => {
+      const handler = (
+        _event: Electron.IpcRendererEvent,
+        id: string,
+        data: string
+      ) => callback(id, data);
+      ipcRenderer.on('pty:data', handler);
+      return () => {
+        ipcRenderer.removeListener('pty:data', handler);
+      };
+    },
+    onExit: (callback: (id: string) => void) => {
+      const handler = (_event: Electron.IpcRendererEvent, id: string) =>
+        callback(id);
+      ipcRenderer.on('pty:exit', handler);
+      return () => {
+        ipcRenderer.removeListener('pty:exit', handler);
+      };
+    },
+  },
+};
+
+contextBridge.exposeInMainWorld('electronAPI', api);

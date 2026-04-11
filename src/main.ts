@@ -1,10 +1,31 @@
-import { app, BrowserWindow } from 'electron';
-import path from 'path';
+import { app, BrowserWindow, ipcMain, dialog } from 'electron';
+import * as path from 'path';
+import * as fs from 'fs';
+import { readConfig, addRepo, removeRepo } from './main/config-manager';
+import {
+  createPty,
+  writePty,
+  resizePty,
+  closePty,
+  closeAllPtys,
+} from './main/pty-manager';
+
+const CONFIG_PATH = path.join(
+  app.getPath('appData'),
+  'Accordion',
+  'config.json'
+);
+
+let mainWindow: BrowserWindow | null = null;
 
 function createWindow() {
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
+    minWidth: 800,
+    minHeight: 600,
+    title: 'Accordion',
+    backgroundColor: '#1a1a2e',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
     },
@@ -19,5 +40,64 @@ function createWindow() {
   }
 }
 
+// Config IPC handlers
+ipcMain.handle('config:get', () => readConfig(CONFIG_PATH));
+ipcMain.handle('config:add-repo', (_event, repoPath: string) =>
+  addRepo(CONFIG_PATH, repoPath)
+);
+ipcMain.handle('config:remove-repo', (_event, repoPath: string) =>
+  removeRepo(CONFIG_PATH, repoPath)
+);
+
+// Dialog IPC handler
+ipcMain.handle('dialog:select-directory', async () => {
+  if (!mainWindow) return null;
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openDirectory'],
+  });
+  if (result.canceled || result.filePaths.length === 0) return null;
+  return result.filePaths[0];
+});
+
+// Filesystem IPC handlers
+ipcMain.handle('fs:list-subdirectories', async (_event, dirPath: string) => {
+  try {
+    const entries = await fs.promises.readdir(dirPath, { withFileTypes: true });
+    return entries
+      .filter((e) => e.isDirectory() && !e.name.startsWith('.'))
+      .map((e) => ({ name: e.name, path: path.join(dirPath, e.name) }));
+  } catch {
+    return [];
+  }
+});
+
+ipcMain.handle('fs:directory-exists', async (_event, dirPath: string) => {
+  try {
+    const stat = await fs.promises.stat(dirPath);
+    return stat.isDirectory();
+  } catch {
+    return false;
+  }
+});
+
+// PTY IPC handlers
+ipcMain.handle('pty:create', (_event, cwd: string) => {
+  if (!mainWindow) throw new Error('No window available');
+  return createPty(cwd, mainWindow);
+});
+
+ipcMain.on('pty:write', (_event, id: string, data: string) =>
+  writePty(id, data)
+);
+ipcMain.on('pty:resize', (_event, id: string, cols: number, rows: number) =>
+  resizePty(id, cols, rows)
+);
+ipcMain.on('pty:close', (_event, id: string) => closePty(id));
+
+// App lifecycle
 app.whenReady().then(createWindow);
-app.on('window-all-closed', () => app.quit());
+
+app.on('window-all-closed', () => {
+  closeAllPtys();
+  app.quit();
+});
