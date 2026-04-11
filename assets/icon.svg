@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <!-- Dark background with rounded corners -->
+  <rect width="256" height="256" rx="48" ry="48" fill="#1a1a2e"/>
+
+  <!-- Five chevrons fading left (0.3 opacity) to right (1.0 opacity) -->
+  <!-- Using a monospace-style > chevron drawn with paths -->
+  <!-- Chevron 1: leftmost, most faded -->
+  <text x="28" y="152" font-family="monospace, 'Courier New', Courier" font-size="88" font-weight="bold" fill="#7c9cff" fill-opacity="0.3" letter-spacing="0">&#62;</text>
+  <!-- Chevron 2 -->
+  <text x="68" y="152" font-family="monospace, 'Courier New', Courier" font-size="88" font-weight="bold" fill="#7c9cff" fill-opacity="0.475" letter-spacing="0">&#62;</text>
+  <!-- Chevron 3 -->
+  <text x="108" y="152" font-family="monospace, 'Courier New', Courier" font-size="88" font-weight="bold" fill="#7c9cff" fill-opacity="0.65" letter-spacing="0">&#62;</text>
+  <!-- Chevron 4 -->
+  <text x="148" y="152" font-family="monospace, 'Courier New', Courier" font-size="88" font-weight="bold" fill="#7c9cff" fill-opacity="0.825" letter-spacing="0">&#62;</text>
+  <!-- Chevron 5: rightmost, fully opaque -->
+  <text x="188" y="152" font-family="monospace, 'Courier New', Courier" font-size="88" font-weight="bold" fill="#7c9cff" fill-opacity="1.0" letter-spacing="0">&#62;</text>
+</svg>

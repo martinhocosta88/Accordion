@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
+import { execFile } from 'child_process';
 import { readConfig, addRepo, removeRepo } from './main/config-manager';
 import {
   createPty,
@@ -25,6 +26,7 @@ function createWindow() {
     minWidth: 800,
     minHeight: 600,
     title: 'Accordion',
+    icon: path.join(__dirname, '../assets/icon.png'),
     backgroundColor: '#1a1a2e',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -89,6 +91,17 @@ ipcMain.handle('fs:directory-exists', async (_event, dirPath: string) => {
   } catch {
     return false;
   }
+});
+
+// Git IPC handlers
+ipcMain.handle('git:get-branch', async (_event, dirPath: string) => {
+  if (!isPathWithinRepos(dirPath)) return null;
+  return new Promise<string | null>((resolve) => {
+    execFile('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: dirPath }, (err, stdout) => {
+      if (err) return resolve(null);
+      resolve(stdout.trim() || null);
+    });
+  });
 });
 
 // PTY IPC handlers
