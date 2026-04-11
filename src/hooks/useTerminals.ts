@@ -17,6 +17,8 @@ export function useTerminals() {
   const [focusedId, setFocusedId] = useState<string | null>(null);
   const nextIdRef = useRef(1);
   const addingRef = useRef(false);
+  const terminalsRef = useRef(terminals);
+  terminalsRef.current = terminals;
 
   // Listen for pty exit events (shell process died)
   useEffect(() => {
@@ -41,7 +43,7 @@ export function useTerminals() {
   const addTerminal = useCallback(
     async (cwd: string, label: string) => {
       if (addingRef.current) return;
-      if (terminals.length >= MAX_TERMINALS) return;
+      if (terminalsRef.current.length >= MAX_TERMINALS) return;
       addingRef.current = true;
       try {
         const [ptyId, branch] = await Promise.all([
@@ -64,7 +66,7 @@ export function useTerminals() {
         addingRef.current = false;
       }
     },
-    [terminals.length]
+    []
   );
 
   const closeTerminal = useCallback((id: string) => {

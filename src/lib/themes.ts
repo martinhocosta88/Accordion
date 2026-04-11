@@ -1,4 +1,4 @@
-export type ThemeName = 'accordion' | 'carbon' | 'midnight' | 'light';
+import type { ThemeName } from '../types';
 
 export interface ThemeColors {
   bgMain: string;

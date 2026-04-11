@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import type { AppConfig } from '../types';
+import { VALID_THEMES } from '../types';
+import type { AppConfig, ThemeName } from '../types';
 
 const defaultConfig = (): AppConfig => ({ repos: [], theme: 'accordion' });
 
@@ -16,7 +17,7 @@ export function readConfig(configPath: string): AppConfig {
       writeConfig(configPath, defaultConfig());
       return defaultConfig();
     }
-    if (!config.theme || !['accordion', 'carbon', 'midnight', 'light'].includes(config.theme)) {
+    if (!config.theme || !(VALID_THEMES as readonly string[]).includes(config.theme)) {
       config.theme = 'accordion';
     }
     return config;
@@ -51,8 +52,11 @@ export function removeRepo(configPath: string, repoPath: string): AppConfig {
 }
 
 export function setTheme(configPath: string, theme: string): AppConfig {
+  if (!(VALID_THEMES as readonly string[]).includes(theme)) {
+    return readConfig(configPath);
+  }
   const config = readConfig(configPath);
-  config.theme = theme as AppConfig['theme'];
+  config.theme = theme as ThemeName;
   writeConfig(configPath, config);
   return config;
 }

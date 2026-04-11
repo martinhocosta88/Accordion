@@ -53,7 +53,7 @@ export function TerminalPanel({
     fitAddonRef.current = fitAddon;
 
     // Fit after a brief delay to let the container size settle
-    requestAnimationFrame(() => {
+    const rafId = requestAnimationFrame(() => {
       fitAddon.fit();
       window.electronAPI.pty.resize(ptyId, terminal.cols, terminal.rows);
     });
@@ -71,6 +71,7 @@ export function TerminalPanel({
     });
 
     return () => {
+      cancelAnimationFrame(rafId);
       dataDisposable.dispose();
       unsubData();
       terminal.dispose();

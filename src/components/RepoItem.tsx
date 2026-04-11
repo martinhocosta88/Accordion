@@ -1,4 +1,8 @@
 import { useState, useEffect } from 'react';
+import { ContextMenu } from './ContextMenu';
+import { BranchPicker } from './BranchPicker';
+import { ConfirmDialog } from './ConfirmDialog';
+import { useGitActions } from '../hooks/useGitActions';
 import type { SubDirectory } from '../types';
 
 interface SubDirItemProps {
@@ -20,12 +24,9 @@ function SubDirItem({
 }: SubDirItemProps) {
   const [expanded, setExpanded] = useState(false);
   const [children, setChildren] = useState<SubDirectory[]>([]);
-  const [branch, setBranch] = useState<string | null>(null);
   const isActive = activeTerminalPaths.includes(sub.path);
 
-  useEffect(() => {
-    window.electronAPI.git.getBranch(sub.path).then(setBranch);
-  }, [sub.path]);
+  const git = useGitActions(sub.path);
 
   const handleToggle = async () => {
     if (!expanded) {
@@ -43,7 +44,10 @@ function SubDirItem({
 
   return (
     <div className="repo-subdir-container">
-      <div className={`repo-subdir${isActive ? ' repo-subdir-active' : ''}`}>
+      <div
+        className={`repo-subdir${isActive ? ' repo-subdir-active' : ''}`}
+        onContextMenu={(e) => git.handleContextMenu(e, true)}
+      >
         <button className="repo-toggle" onClick={handleToggle}>
           {expanded ? '\u25BC' : '\u25B6'}
         </button>
@@ -56,8 +60,8 @@ function SubDirItem({
             <span className="repo-icon">{'\uD83D\uDCC2'}</span>
             {sub.name}
           </button>
-          {branch && (
-            <div className="repo-branch">{'\u2387'} {branch}</div>
+          {git.branch && (
+            <div className="repo-branch">{'\u2387'} {git.branch}</div>
           )}
         </div>
       </div>
@@ -83,6 +87,30 @@ function SubDirItem({
           })}
         </div>
       )}
+      {git.contextMenu && (
+        <ContextMenu
+          x={git.contextMenu.x}
+          y={git.contextMenu.y}
+          items={git.contextMenuItems}
+          onClose={() => git.setContextMenu(null)}
+        />
+      )}
+      {git.showBranchPicker && (
+        <BranchPicker
+          repoPath={sub.path}
+          currentBranch={git.branch}
+          onClose={() => git.setShowBranchPicker(false)}
+          onBranchChanged={git.handleBranchChanged}
+        />
+      )}
+      {git.showRevertConfirm && (
+        <ConfirmDialog
+          message="Revert all uncommitted changes? This cannot be undone."
+          confirmLabel="Revert"
+          onConfirm={git.handleRevert}
+          onCancel={() => git.setShowRevertConfirm(false)}
+        />
+      )}
     </div>
   );
 }
@@ -103,14 +131,14 @@ export function RepoItem({
   const [expanded, setExpanded] = useState(false);
   const [subdirs, setSubdirs] = useState<SubDirectory[]>([]);
   const [exists, setExists] = useState(true);
-  const [branch, setBranch] = useState<string | null>(null);
+
+  const git = useGitActions(repoPath);
 
   const repoName = repoPath.split(/[\\/]/).pop() || repoPath;
   const isActive = activeTerminalPaths.includes(repoPath);
 
   useEffect(() => {
     window.electronAPI.fs.directoryExists(repoPath).then(setExists);
-    window.electronAPI.git.getBranch(repoPath).then(setBranch);
   }, [repoPath]);
 
   const handleToggle = async () => {
@@ -142,6 +170,7 @@ export function RepoItem({
     <div className="repo-item-container">
       <div
         className={`repo-item${isActive ? ' repo-item-active' : ''}${disabled ? ' repo-item-disabled' : ''}`}
+        onContextMenu={(e) => git.handleContextMenu(e)}
       >
         <button className="repo-toggle" onClick={handleToggle}>
           {expanded ? '\u25BC' : '\u25B6'}
@@ -155,8 +184,8 @@ export function RepoItem({
             <span className="repo-icon">{'\uD83D\uDCC1'}</span>
             {repoName}
           </button>
-          {branch && (
-            <div className="repo-branch">{'\u2387'} {branch}</div>
+          {git.branch && (
+            <div className="repo-branch">{'\u2387'} {git.branch}</div>
           )}
         </div>
       </div>
@@ -174,6 +203,30 @@ export function RepoItem({
             />
           ))}
         </div>
+      )}
+      {git.contextMenu && (
+        <ContextMenu
+          x={git.contextMenu.x}
+          y={git.contextMenu.y}
+          items={git.contextMenuItems}
+          onClose={() => git.setContextMenu(null)}
+        />
+      )}
+      {git.showBranchPicker && (
+        <BranchPicker
+          repoPath={repoPath}
+          currentBranch={git.branch}
+          onClose={() => git.setShowBranchPicker(false)}
+          onBranchChanged={git.handleBranchChanged}
+        />
+      )}
+      {git.showRevertConfirm && (
+        <ConfirmDialog
+          message="Revert all uncommitted changes? This cannot be undone."
+          confirmLabel="Revert"
+          onConfirm={git.handleRevert}
+          onCancel={() => git.setShowRevertConfirm(false)}
+        />
       )}
     </div>
   );

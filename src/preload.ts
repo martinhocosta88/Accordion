@@ -20,6 +20,10 @@ const api: ElectronAPI = {
   git: {
     getBranch: (dirPath: string) => ipcRenderer.invoke('git:get-branch', dirPath),
     getDiff: (dirPath: string) => ipcRenderer.invoke('git:get-diff', dirPath),
+    fetch: (dirPath: string) => ipcRenderer.invoke('git:fetch', dirPath),
+    listBranches: (dirPath: string) => ipcRenderer.invoke('git:list-branches', dirPath),
+    checkout: (dirPath: string, branch: string) => ipcRenderer.invoke('git:checkout', dirPath, branch),
+    resetHard: (dirPath: string) => ipcRenderer.invoke('git:reset-hard', dirPath),
   },
   pty: {
     create: (cwd: string) => ipcRenderer.invoke('pty:create', cwd),

@@ -1,4 +1,5 @@
-export type ThemeName = 'accordion' | 'carbon' | 'midnight' | 'light';
+export const VALID_THEMES = ['accordion', 'carbon', 'midnight', 'light'] as const;
+export type ThemeName = (typeof VALID_THEMES)[number];
 
 export interface AppConfig {
   repos: string[];
@@ -27,6 +28,10 @@ export interface ElectronAPI {
   git: {
     getBranch(dirPath: string): Promise<string | null>;
     getDiff(dirPath: string): Promise<string>;
+    fetch(dirPath: string): Promise<boolean>;
+    listBranches(dirPath: string): Promise<string[]>;
+    checkout(dirPath: string, branch: string): Promise<{ ok: boolean; error?: string }>;
+    resetHard(dirPath: string): Promise<boolean>;
   };
   pty: {
     create(cwd: string): Promise<string>;

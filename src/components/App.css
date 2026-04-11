@@ -367,7 +367,7 @@ body {
 }
 
 .repo-subdir-leaf:hover:not(:disabled) {
-  background: var(--btn-hover);
+  background: var(--selection);
   color: var(--text-secondary);
 }
 
@@ -626,7 +626,7 @@ body {
 }
 
 .settings-add-btn:hover {
-  background: var(--btn-hover);
+  background: var(--selection);
 }
 
 /* === Theme Picker === */
@@ -678,6 +678,208 @@ body {
 .settings-theme-label {
   font-size: 11px;
   color: var(--text-secondary);
+}
+
+/* === Context Menu === */
+.context-menu {
+  position: fixed;
+  z-index: 200;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px;
+  min-width: 160px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.context-menu-item {
+  display: block;
+  width: 100%;
+  padding: 6px 12px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.context-menu-item:hover:not(:disabled) {
+  background: var(--btn-hover);
+  color: var(--text-primary);
+}
+
+.context-menu-item-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* === Branch Picker === */
+.branch-picker {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: 400px;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.branch-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.branch-picker-header h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.branch-picker-search {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.branch-picker-input {
+  width: 100%;
+  background: var(--bg-terminal);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+}
+
+.branch-picker-input:focus {
+  border-color: var(--accent);
+}
+
+.branch-picker-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.branch-picker-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.branch-picker-error {
+  padding: 8px 12px;
+  margin: 0 12px;
+  background: rgba(255, 80, 80, 0.15);
+  border: 1px solid rgba(255, 80, 80, 0.4);
+  border-radius: 4px;
+  color: #ff6b6b;
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+
+.branch-picker-empty {
+  padding: 16px;
+  color: var(--text-tertiary);
+  font-size: 13px;
+  text-align: center;
+}
+
+.branch-picker-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 7px 12px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-family: 'Cascadia Code', 'Consolas', monospace;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.branch-picker-item:hover:not(:disabled) {
+  background: var(--btn-hover);
+  color: var(--text-primary);
+}
+
+.branch-picker-item-current {
+  color: var(--accent);
+  cursor: default;
+}
+
+.branch-picker-remote {
+  color: var(--text-tertiary);
+  font-size: 11px;
+}
+
+.branch-picker-badge {
+  font-size: 10px;
+  color: var(--accent);
+  background: var(--bg-side);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* === Confirm Dialog === */
+.confirm-dialog {
+  background: var(--bg-side);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 24px;
+  min-width: 320px;
+  max-width: 400px;
+}
+
+.confirm-dialog-message {
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0 0 20px 0;
+}
+
+.confirm-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.confirm-dialog-cancel,
+.confirm-dialog-confirm {
+  padding: 7px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+}
+
+.confirm-dialog-cancel {
+  background: var(--bg-terminal);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.confirm-dialog-cancel:hover {
+  color: var(--text-primary);
+}
+
+.confirm-dialog-confirm {
+  background: var(--error);
+  color: #fff;
+}
+
+.confirm-dialog-confirm:hover {
+  opacity: 0.85;
 }
 
 /* === Diff Panel === */

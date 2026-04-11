@@ -20,6 +20,8 @@ Accordion opens a terminal grid where each pane runs Claude Code in a different 
 
 **Four Color Themes** — Switch between Accordion (signature indigo), Carbon (neutral dark), Midnight (deep navy), and Light from the settings dialog. Themes apply instantly to the full UI and terminal colors.
 
+**Git Operations** — Right-click any repo folder to fetch from remotes, switch branches (with filter search), or revert uncommitted changes. Branch names are shown below each folder.
+
 **Collapsible Side Pane** — Collapse the repository browser to a narrow icon strip to maximize terminal space.
 
 ## Getting Started
@@ -65,7 +67,10 @@ src/
   components/
     App.tsx                # Root layout, state orchestration
     SidePane.tsx           # Collapsible repo browser
-    RepoItem.tsx           # Expandable repo with subdirs and branch
+    RepoItem.tsx           # Expandable repo with subdirs, branch, and context menu
+    BranchPicker.tsx       # Branch switch dialog with filter search
+    ContextMenu.tsx        # Reusable positioned right-click menu
+    ConfirmDialog.tsx      # Styled confirmation dialog
     TerminalGrid.tsx       # Auto-layout grid with diff mode
     TerminalPanel.tsx      # xterm.js terminal with PTY bridge
     DiffPanel.tsx          # Git diff viewer with inline comments
@@ -93,6 +98,9 @@ src/
 | View diff | Click the delta button in the terminal header |
 | Comment on diff | Click a +/- line, type feedback, press Enter |
 | Change theme | Settings > Theme section |
+| Git fetch | Right-click a repo folder > Fetch |
+| Switch branch | Right-click a repo folder > Switch Branch |
+| Revert changes | Right-click a repo folder > Revert |
 | Collapse sidebar | Click the arrow in the side pane header |
 | Add repos | Settings > + Add Repository |
 
