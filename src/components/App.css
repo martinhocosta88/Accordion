@@ -14,10 +14,91 @@ body,
   overflow: hidden;
 }
 
+/* === Theme Variables === */
+:root {
+  --bg-main: #1a1a2e;
+  --bg-side: #16162a;
+  --bg-terminal: #0d0d1a;
+  --bg-panel: #1e1e3a;
+  --bg-header: #1a1a30;
+  --bg-header-focused: #252550;
+  --border: #2a2a4a;
+  --accent: #7c9cff;
+  --accent-soft: #9ab0ff;
+  --text-primary: #e0e0f0;
+  --text-secondary: #c0c0e0;
+  --text-tertiary: #a0a0d0;
+  --text-header: #8888cc;
+  --btn-hover: #2a2a50;
+  --error: #ff5555;
+  --warning: #ffcc33;
+  --selection: #3a3a6a;
+}
+
+[data-theme="carbon"] {
+  --bg-main: #1e1e1e;
+  --bg-side: #1a1a1a;
+  --bg-terminal: #111111;
+  --bg-panel: #242424;
+  --bg-header: #2a2a2a;
+  --bg-header-focused: #333333;
+  --border: #333333;
+  --accent: #4fc3f7;
+  --accent-soft: #80d8ff;
+  --text-primary: #d4d4d4;
+  --text-secondary: #aaaaaa;
+  --text-tertiary: #888888;
+  --text-header: #888888;
+  --btn-hover: #383838;
+  --error: #f44747;
+  --warning: #ffcc33;
+  --selection: #264f78;
+}
+
+[data-theme="midnight"] {
+  --bg-main: #0d1117;
+  --bg-side: #0d1117;
+  --bg-terminal: #010409;
+  --bg-panel: #161b22;
+  --bg-header: #161b22;
+  --bg-header-focused: #1c2333;
+  --border: #21262d;
+  --accent: #58a6ff;
+  --accent-soft: #79c0ff;
+  --text-primary: #c9d1d9;
+  --text-secondary: #8b949e;
+  --text-tertiary: #6e7681;
+  --text-header: #8b949e;
+  --btn-hover: #21262d;
+  --error: #f85149;
+  --warning: #d29922;
+  --selection: #1c3a5c;
+}
+
+[data-theme="light"] {
+  --bg-main: #eaeaef;
+  --bg-side: #f5f5f7;
+  --bg-terminal: #ffffff;
+  --bg-panel: #ffffff;
+  --bg-header: #f0f0f5;
+  --bg-header-focused: #e8eaf4;
+  --border: #d0d0d8;
+  --accent: #4a6ad0;
+  --accent-soft: #6680d8;
+  --text-primary: #1a1a2a;
+  --text-secondary: #444460;
+  --text-tertiary: #666680;
+  --text-header: #666680;
+  --btn-hover: #e0e0e8;
+  --error: #d32f2f;
+  --warning: #c67600;
+  --selection: #b4c8f0;
+}
+
 body {
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  background: #1a1a2e;
-  color: #e0e0f0;
+  background: var(--bg-main);
+  color: var(--text-primary);
 }
 
 /* === App Layout === */
@@ -29,8 +110,8 @@ body {
 /* === Side Pane === */
 .side-pane {
   width: 220px;
-  background: #16162a;
-  border-right: 1px solid #2a2a4a;
+  background: var(--bg-side);
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -41,7 +122,7 @@ body {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #8888cc;
+  color: var(--text-header);
 }
 
 .side-pane-list {
@@ -55,7 +136,7 @@ body {
 
 .side-pane-empty {
   padding: 16px 8px;
-  color: #666;
+  color: var(--text-tertiary);
   font-size: 13px;
   text-align: center;
 }
@@ -63,10 +144,10 @@ body {
 .side-pane-settings {
   padding: 10px;
   margin: 8px;
-  background: #1e1e3a;
-  border: 1px solid #2a2a4a;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
   border-radius: 8px;
-  color: #8888cc;
+  color: var(--text-header);
   font-size: 13px;
   cursor: pointer;
   text-align: center;
@@ -74,7 +155,7 @@ body {
 }
 
 .side-pane-settings:hover {
-  background: #2a2a50;
+  background: var(--btn-hover);
 }
 
 /* === Repo Item === */
@@ -87,10 +168,10 @@ body {
   align-items: flex-start;
   gap: 6px;
   padding: 8px;
-  background: #1e1e3a;
+  background: var(--bg-panel);
   border-radius: 8px;
   font-size: 13px;
-  color: #c0c0e0;
+  color: var(--text-secondary);
 }
 
 .repo-item-content {
@@ -99,7 +180,7 @@ body {
 }
 
 .repo-item-active {
-  border-left: 3px solid #7c9cff;
+  border-left: 3px solid var(--accent);
 }
 
 .repo-item-disabled {
@@ -111,16 +192,16 @@ body {
   align-items: center;
   gap: 6px;
   padding: 8px;
-  background: #1e1e3a;
+  background: var(--bg-panel);
   border-radius: 8px;
   font-size: 13px;
-  color: #666;
+  color: var(--text-tertiary);
 }
 
 .repo-toggle {
   background: none;
   border: none;
-  color: #6c6caa;
+  color: var(--text-tertiary);
   cursor: pointer;
   font-size: 10px;
   padding: 2px;
@@ -148,7 +229,7 @@ body {
 }
 
 .repo-name:hover:not(:disabled) {
-  color: #7c9cff;
+  color: var(--accent);
 }
 
 .repo-name:disabled {
@@ -156,13 +237,13 @@ body {
 }
 
 .repo-warning {
-  color: #ffcc33;
+  color: var(--warning);
   font-size: 12px;
 }
 
 .repo-branch {
   font-size: 11px;
-  color: #7c9cff;
+  color: var(--accent);
   opacity: 0.8;
   white-space: nowrap;
   overflow: hidden;
@@ -187,10 +268,10 @@ body {
   align-items: flex-start;
   gap: 2px;
   padding: 5px 8px;
-  background: #2a2a50;
+  background: var(--btn-hover);
   border: none;
   border-radius: 6px;
-  color: #a0a0d0;
+  color: var(--text-tertiary);
   font-size: 12px;
   text-align: left;
   font-family: inherit;
@@ -218,7 +299,7 @@ body {
 }
 
 .repo-subdir-name:hover:not(:disabled) {
-  color: #c0c0f0;
+  color: var(--text-secondary);
 }
 
 .repo-subdir-name:disabled {
@@ -228,10 +309,10 @@ body {
 
 .repo-subdir-leaf {
   padding: 4px 8px;
-  background: #2a2a50;
+  background: var(--btn-hover);
   border: none;
   border-radius: 6px;
-  color: #a0a0d0;
+  color: var(--text-tertiary);
   font-size: 12px;
   cursor: pointer;
   text-align: left;
@@ -243,12 +324,12 @@ body {
 }
 
 .repo-subdir-leaf:hover:not(:disabled) {
-  background: #3a3a60;
-  color: #c0c0f0;
+  background: var(--btn-hover);
+  color: var(--text-secondary);
 }
 
 .repo-subdir-active {
-  border-left: 2px solid #7c9cff;
+  border-left: 2px solid var(--accent);
 }
 
 .repo-subdir:disabled,
@@ -270,7 +351,7 @@ body {
 .terminal-grid.empty {
   align-items: center;
   justify-content: center;
-  color: #555;
+  color: var(--text-tertiary);
   font-size: 15px;
 }
 
@@ -286,16 +367,16 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #0d0d1a;
+  background: var(--bg-terminal);
   border-radius: 10px;
-  border: 1px solid #2a2a4a;
+  border: 1px solid var(--border);
   overflow: hidden;
   min-width: 0;
   min-height: 0;
 }
 
 .terminal-panel-focused {
-  border-color: #7c9cff;
+  border-color: var(--accent);
 }
 
 .terminal-header {
@@ -303,19 +384,19 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 6px 10px;
-  background: #1a1a30;
-  border-bottom: 1px solid #2a2a4a;
+  background: var(--bg-header);
+  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
   transition: background 0.2s;
 }
 
 .terminal-header-focused {
-  background: #252550;
-  border-bottom-color: #7c9cff;
+  background: var(--bg-header-focused);
+  border-bottom-color: var(--accent);
 }
 
 .terminal-label {
-  color: #7c9cff;
+  color: var(--accent);
   font-size: 12px;
   white-space: nowrap;
   overflow: hidden;
@@ -323,7 +404,7 @@ body {
 }
 
 .terminal-branch {
-  color: #9ab0ff;
+  color: var(--accent-soft);
   opacity: 0.7;
   margin-left: 8px;
   font-size: 11px;
@@ -338,7 +419,7 @@ body {
 .terminal-btn {
   background: none;
   border: none;
-  color: #555;
+  color: var(--text-tertiary);
   font-size: 12px;
   cursor: pointer;
   padding: 2px 4px;
@@ -347,12 +428,12 @@ body {
 }
 
 .terminal-btn:hover {
-  color: #aaa;
-  background: #2a2a4a;
+  color: var(--text-secondary);
+  background: var(--border);
 }
 
 .terminal-btn-close:hover {
-  color: #ff5555;
+  color: var(--error);
   background: #3a1a1a;
 }
 
@@ -369,7 +450,7 @@ body {
 
 .terminal-error {
   padding: 16px;
-  color: #ff5555;
+  color: var(--error);
   font-size: 13px;
 }
 
@@ -388,8 +469,8 @@ body {
 }
 
 .settings-dialog {
-  background: #1e1e3a;
-  border: 1px solid #2a2a4a;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
   border-radius: 12px;
   width: 500px;
   max-height: 80vh;
@@ -403,19 +484,19 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  border-bottom: 1px solid #2a2a4a;
+  border-bottom: 1px solid var(--border);
 }
 
 .settings-header h2 {
   font-size: 18px;
   font-weight: 600;
-  color: #e0e0f0;
+  color: var(--text-primary);
 }
 
 .settings-close {
   background: none;
   border: none;
-  color: #666;
+  color: var(--text-tertiary);
   font-size: 16px;
   cursor: pointer;
   padding: 4px 8px;
@@ -423,8 +504,8 @@ body {
 }
 
 .settings-close:hover {
-  color: #aaa;
-  background: #2a2a4a;
+  color: var(--text-secondary);
+  background: var(--border);
 }
 
 .settings-body {
@@ -434,7 +515,7 @@ body {
 
 .settings-body h3 {
   font-size: 14px;
-  color: #8888cc;
+  color: var(--text-header);
   margin-bottom: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -448,7 +529,7 @@ body {
 }
 
 .settings-empty {
-  color: #666;
+  color: var(--text-tertiary);
   font-size: 13px;
   padding: 12px 0;
 }
@@ -458,14 +539,14 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
-  background: #16162a;
+  background: var(--bg-side);
   border-radius: 8px;
-  border: 1px solid #2a2a4a;
+  border: 1px solid var(--border);
 }
 
 .settings-repo-path {
   font-size: 13px;
-  color: #c0c0e0;
+  color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -476,7 +557,7 @@ body {
 .settings-repo-remove {
   background: none;
   border: 1px solid #3a2a2a;
-  color: #ff5555;
+  color: var(--error);
   font-size: 12px;
   padding: 4px 10px;
   border-radius: 6px;
@@ -492,17 +573,17 @@ body {
 .settings-add-btn {
   width: 100%;
   padding: 10px;
-  background: #2a2a50;
-  border: 1px dashed #4a4a7a;
+  background: var(--btn-hover);
+  border: 1px dashed var(--border);
   border-radius: 8px;
-  color: #7c9cff;
+  color: var(--accent);
   font-size: 14px;
   cursor: pointer;
   transition: background 0.2s;
 }
 
 .settings-add-btn:hover {
-  background: #3a3a60;
+  background: var(--btn-hover);
 }
 
 /* === Scrollbar === */
@@ -515,10 +596,10 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2a2a4a;
+  background: var(--border);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3a3a5a;
+  background: var(--btn-hover);
 }
