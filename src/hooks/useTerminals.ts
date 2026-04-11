@@ -5,6 +5,7 @@ export interface TerminalState {
   ptyId: string;
   cwd: string;
   label: string;
+  branch: string | null;
   createdAt: number;
 }
 
@@ -13,6 +14,7 @@ const MAX_TERMINALS = 6;
 export function useTerminals() {
   const [terminals, setTerminals] = useState<TerminalState[]>([]);
   const [maximizedId, setMaximizedId] = useState<string | null>(null);
+  const [focusedId, setFocusedId] = useState<string | null>(null);
   const nextIdRef = useRef(1);
   const addingRef = useRef(false);
 
@@ -42,15 +44,20 @@ export function useTerminals() {
       if (terminals.length >= MAX_TERMINALS) return;
       addingRef.current = true;
       try {
-        const ptyId = await window.electronAPI.pty.create(cwd);
+        const [ptyId, branch] = await Promise.all([
+          window.electronAPI.pty.create(cwd),
+          window.electronAPI.git.getBranch(cwd),
+        ]);
         const id = `term-${nextIdRef.current++}`;
         setTerminals((prev) => {
           if (prev.length >= MAX_TERMINALS) {
             window.electronAPI.pty.close(ptyId);
             return prev;
           }
-          return [...prev, { id, ptyId, cwd, label, createdAt: Date.now() }];
+          return [...prev, { id, ptyId, cwd, label, branch, createdAt: Date.now() }];
         });
+        setFocusedId(id);
+        setTimeout(() => window.electronAPI.pty.write(ptyId, 'claude\r'), 500);
       } catch (err) {
         console.error('Failed to spawn terminal:', err);
       } finally {
@@ -76,12 +83,18 @@ export function useTerminals() {
     setMaximizedId((prev) => (prev === id ? null : id));
   }, []);
 
+  const focusTerminal = useCallback((id: string) => {
+    setFocusedId(id);
+  }, []);
+
   return {
     terminals,
     maximizedId,
+    focusedId,
     addTerminal,
     closeTerminal,
     toggleMaximize,
+    focusTerminal,
     canAdd: terminals.length < MAX_TERMINALS,
   };
 }

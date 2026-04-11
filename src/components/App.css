@@ -84,13 +84,18 @@ body {
 
 .repo-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
   padding: 8px;
   background: #1e1e3a;
   border-radius: 8px;
   font-size: 13px;
   color: #c0c0e0;
+}
+
+.repo-item-content {
+  flex: 1;
+  min-width: 0;
 }
 
 .repo-item-active {
@@ -128,6 +133,9 @@ body {
 }
 
 .repo-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   background: none;
   border: none;
   color: inherit;
@@ -135,7 +143,7 @@ body {
   font-size: 13px;
   text-align: left;
   padding: 0;
-  flex: 1;
+  width: 100%;
   font-family: inherit;
 }
 
@@ -152,6 +160,16 @@ body {
   font-size: 12px;
 }
 
+.repo-branch {
+  font-size: 11px;
+  color: #7c9cff;
+  opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-top: 2px;
+}
+
 .repo-subdirs {
   padding: 4px 0 4px 24px;
   display: flex;
@@ -159,11 +177,57 @@ body {
   gap: 4px;
 }
 
+.repo-subdir-container {
+  display: flex;
+  flex-direction: column;
+}
+
 .repo-subdir {
+  display: flex;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 5px 8px;
+  background: #2a2a50;
+  border: none;
+  border-radius: 6px;
+  color: #a0a0d0;
+  font-size: 12px;
+  text-align: left;
+  font-family: inherit;
+  transition: background 0.2s;
+}
+
+.repo-subdir-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.repo-subdir-name {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 8px;
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  flex: 1;
+  padding: 0;
+}
+
+.repo-subdir-name:hover:not(:disabled) {
+  color: #c0c0f0;
+}
+
+.repo-subdir-name:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.repo-subdir-leaf {
+  padding: 4px 8px;
   background: #2a2a50;
   border: none;
   border-radius: 6px;
@@ -172,10 +236,13 @@ body {
   cursor: pointer;
   text-align: left;
   font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   transition: background 0.2s;
 }
 
-.repo-subdir:hover:not(:disabled) {
+.repo-subdir-leaf:hover:not(:disabled) {
   background: #3a3a60;
   color: #c0c0f0;
 }
@@ -184,7 +251,8 @@ body {
   border-left: 2px solid #7c9cff;
 }
 
-.repo-subdir:disabled {
+.repo-subdir:disabled,
+.repo-subdir-leaf:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -226,6 +294,10 @@ body {
   min-height: 0;
 }
 
+.terminal-panel-focused {
+  border-color: #7c9cff;
+}
+
 .terminal-header {
   display: flex;
   align-items: center;
@@ -234,6 +306,12 @@ body {
   background: #1a1a30;
   border-bottom: 1px solid #2a2a4a;
   flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.terminal-header-focused {
+  background: #252550;
+  border-bottom-color: #7c9cff;
 }
 
 .terminal-label {
@@ -242,6 +320,13 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.terminal-branch {
+  color: #9ab0ff;
+  opacity: 0.7;
+  margin-left: 8px;
+  font-size: 11px;
 }
 
 .terminal-controls {

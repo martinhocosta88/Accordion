@@ -11,9 +11,11 @@ export default function App() {
   const {
     terminals,
     maximizedId,
+    focusedId,
     addTerminal,
     closeTerminal,
     toggleMaximize,
+    focusTerminal,
     canAdd,
   } = useTerminals();
 
@@ -47,8 +49,10 @@ export default function App() {
       <TerminalGrid
         terminals={terminals}
         maximizedId={maximizedId}
+        focusedId={focusedId}
         onClose={closeTerminal}
         onToggleMaximize={toggleMaximize}
+        onFocus={focusTerminal}
       />
       {showSettings && (
         <SettingsDialog

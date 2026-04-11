@@ -20,6 +20,9 @@ export interface ElectronAPI {
     listSubdirectories(dirPath: string): Promise<SubDirectory[]>;
     directoryExists(dirPath: string): Promise<boolean>;
   };
+  git: {
+    getBranch(dirPath: string): Promise<string | null>;
+  };
   pty: {
     create(cwd: string): Promise<string>;
     write(id: string, data: string): void;

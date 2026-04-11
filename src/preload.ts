@@ -16,6 +16,9 @@ const api: ElectronAPI = {
     directoryExists: (dirPath: string) =>
       ipcRenderer.invoke('fs:directory-exists', dirPath),
   },
+  git: {
+    getBranch: (dirPath: string) => ipcRenderer.invoke('git:get-branch', dirPath),
+  },
   pty: {
     create: (cwd: string) => ipcRenderer.invoke('pty:create', cwd),
     write: (id: string, data: string) => ipcRenderer.send('pty:write', id, data),

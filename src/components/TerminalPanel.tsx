@@ -6,17 +6,23 @@ import '@xterm/xterm/css/xterm.css';
 interface TerminalPanelProps {
   ptyId: string;
   label: string;
+  branch: string | null;
   isMaximized: boolean;
+  isFocused: boolean;
   onClose: () => void;
   onToggleMaximize: () => void;
+  onFocus: () => void;
 }
 
 export function TerminalPanel({
   ptyId,
   label,
+  branch,
   isMaximized,
+  isFocused,
   onClose,
   onToggleMaximize,
+  onFocus,
 }: TerminalPanelProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const terminalRef = useRef<Terminal | null>(null);
@@ -98,9 +104,12 @@ export function TerminalPanel({
   }, [ptyId]);
 
   return (
-    <div className="terminal-panel">
-      <div className="terminal-header">
-        <span className="terminal-label">{label}</span>
+    <div className={`terminal-panel${isFocused ? ' terminal-panel-focused' : ''}`} onMouseDown={onFocus}>
+      <div className={`terminal-header${isFocused ? ' terminal-header-focused' : ''}`}>
+        <span className="terminal-label">
+          {label}
+          {branch && <span className="terminal-branch">{'\u2387'} {branch}</span>}
+        </span>
         <div className="terminal-controls">
           <button
             className="terminal-btn"

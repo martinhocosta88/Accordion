@@ -5,15 +5,19 @@ import type { TerminalState } from '../hooks/useTerminals';
 interface TerminalGridProps {
   terminals: TerminalState[];
   maximizedId: string | null;
+  focusedId: string | null;
   onClose: (id: string) => void;
   onToggleMaximize: (id: string) => void;
+  onFocus: (id: string) => void;
 }
 
 export function TerminalGrid({
   terminals,
   maximizedId,
+  focusedId,
   onClose,
   onToggleMaximize,
+  onFocus,
 }: TerminalGridProps) {
   if (terminals.length === 0) {
     return (
@@ -34,9 +38,12 @@ export function TerminalGrid({
               key={terminal.id}
               ptyId={terminal.ptyId}
               label={terminal.label}
+              branch={terminal.branch}
               isMaximized={true}
+              isFocused={true}
               onClose={() => onClose(terminal.id)}
               onToggleMaximize={() => onToggleMaximize(terminal.id)}
+              onFocus={() => onFocus(terminal.id)}
             />
           </div>
         </div>
@@ -57,9 +64,12 @@ export function TerminalGrid({
             key={t.id}
             ptyId={t.ptyId}
             label={t.label}
+            branch={t.branch}
             isMaximized={false}
+            isFocused={focusedId === t.id}
             onClose={() => onClose(t.id)}
             onToggleMaximize={() => onToggleMaximize(t.id)}
+            onFocus={() => onFocus(t.id)}
           />
         ))}
       </div>
@@ -70,9 +80,12 @@ export function TerminalGrid({
               key={t.id}
               ptyId={t.ptyId}
               label={t.label}
+              branch={t.branch}
               isMaximized={false}
+              isFocused={focusedId === t.id}
               onClose={() => onClose(t.id)}
               onToggleMaximize={() => onToggleMaximize(t.id)}
+              onFocus={() => onFocus(t.id)}
             />
           ))}
         </div>
