@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { SidePane } from './SidePane';
 import { TerminalGrid } from './TerminalGrid';
 import { SettingsDialog } from './SettingsDialog';
@@ -6,7 +6,7 @@ import { useTerminals } from '../hooks/useTerminals';
 import type { AppConfig } from '../types';
 
 export default function App() {
-  const [config, setConfig] = useState<AppConfig>({ repos: [] });
+  const [config, setConfig] = useState<AppConfig>({ repos: [], theme: 'accordion' as const });
   const [showSettings, setShowSettings] = useState(false);
   const {
     terminals,
@@ -23,6 +23,7 @@ export default function App() {
   useEffect(() => {
     window.electronAPI.config.get().then((cfg) => {
       setConfig(cfg);
+      document.documentElement.setAttribute('data-theme', cfg.theme);
       if (cfg.repos.length === 0) {
         setShowSettings(true);
       }
@@ -35,6 +36,7 @@ export default function App() {
 
   const handleConfigChange = (newConfig: AppConfig) => {
     setConfig(newConfig);
+    document.documentElement.setAttribute('data-theme', newConfig.theme);
   };
 
   return (
@@ -53,6 +55,7 @@ export default function App() {
         onClose={closeTerminal}
         onToggleMaximize={toggleMaximize}
         onFocus={focusTerminal}
+        theme={config.theme}
       />
       {showSettings && (
         <SettingsDialog

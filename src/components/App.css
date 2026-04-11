@@ -586,6 +586,57 @@ body {
   background: var(--btn-hover);
 }
 
+/* === Theme Picker === */
+.settings-themes {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.settings-theme-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  background: var(--bg-side);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.settings-theme-btn:hover {
+  border-color: var(--accent);
+}
+
+.settings-theme-active {
+  border-color: var(--accent);
+}
+
+.settings-theme-swatch {
+  width: 100%;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.settings-theme-color {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Consolas', monospace;
+  font-weight: bold;
+  font-size: 14px;
+  border-radius: 4px;
+}
+
+.settings-theme-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
 /* === Scrollbar === */
 ::-webkit-scrollbar {
   width: 8px;

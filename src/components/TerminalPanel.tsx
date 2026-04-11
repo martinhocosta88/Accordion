@@ -2,11 +2,14 @@ import { useEffect, useRef } from 'react';
 import { Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
+import { getXtermTheme } from '../lib/themes';
+import type { ThemeName } from '../types';
 
 interface TerminalPanelProps {
   ptyId: string;
   label: string;
   branch: string | null;
+  theme: ThemeName;
   isMaximized: boolean;
   isFocused: boolean;
   onClose: () => void;
@@ -18,6 +21,7 @@ export function TerminalPanel({
   ptyId,
   label,
   branch,
+  theme,
   isMaximized,
   isFocused,
   onClose,
@@ -36,12 +40,7 @@ export function TerminalPanel({
       scrollback: 1000,
       fontFamily: "'Cascadia Code', 'Consolas', monospace",
       fontSize: 14,
-      theme: {
-        background: '#0d0d1a',
-        foreground: '#e0e0f0',
-        cursor: '#7c9cff',
-        selectionBackground: '#3a3a6a',
-      },
+      theme: getXtermTheme(theme),
     });
 
     const fitAddon = new FitAddon();
@@ -77,6 +76,13 @@ export function TerminalPanel({
       fitAddonRef.current = null;
     };
   }, [ptyId]);
+
+  // Update xterm theme when app theme changes
+  useEffect(() => {
+    if (terminalRef.current) {
+      terminalRef.current.options.theme = getXtermTheme(theme);
+    }
+  }, [theme]);
 
   // Re-fit on container size changes (grid reflow, maximize, window resize)
   useEffect(() => {

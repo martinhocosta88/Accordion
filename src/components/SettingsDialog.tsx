@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import type { AppConfig } from '../types';
+import { themes, themeNames } from '../lib/themes';
 
 interface SettingsDialogProps {
   config: AppConfig;
@@ -33,6 +34,11 @@ export function SettingsDialog({
     onConfigChange(newConfig);
   };
 
+  const handleThemeChange = async (themeName: string) => {
+    const newConfig = await window.electronAPI.config.setTheme(themeName);
+    onConfigChange(newConfig);
+  };
+
   return (
     <div className="settings-overlay" onClick={onClose}>
       <div className="settings-dialog" onClick={(e) => e.stopPropagation()}>
@@ -43,6 +49,30 @@ export function SettingsDialog({
           </button>
         </div>
         <div className="settings-body">
+          <h3>Theme</h3>
+          <div className="settings-themes">
+            {themeNames.map((name) => {
+              const t = themes[name];
+              const isActive = config.theme === name;
+              return (
+                <button
+                  key={name}
+                  className={`settings-theme-btn${isActive ? ' settings-theme-active' : ''}`}
+                  onClick={() => handleThemeChange(name)}
+                >
+                  <div className="settings-theme-swatch">
+                    <div
+                      className="settings-theme-color"
+                      style={{ background: t.colors.bgMain }}
+                    >
+                      <span style={{ color: t.colors.accent }}>&gt;&gt;&gt;</span>
+                    </div>
+                  </div>
+                  <span className="settings-theme-label">{t.label}</span>
+                </button>
+              );
+            })}
+          </div>
           <h3>Repository Paths</h3>
           <div className="settings-repos">
             {config.repos.length === 0 ? (

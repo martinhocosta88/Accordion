@@ -1,6 +1,7 @@
 import { TerminalPanel } from './TerminalPanel';
 import { computeGridLayout } from '../lib/grid-layout';
 import type { TerminalState } from '../hooks/useTerminals';
+import type { ThemeName } from '../types';
 
 interface TerminalGridProps {
   terminals: TerminalState[];
@@ -9,6 +10,7 @@ interface TerminalGridProps {
   onClose: (id: string) => void;
   onToggleMaximize: (id: string) => void;
   onFocus: (id: string) => void;
+  theme: ThemeName;
 }
 
 export function TerminalGrid({
@@ -18,6 +20,7 @@ export function TerminalGrid({
   onClose,
   onToggleMaximize,
   onFocus,
+  theme,
 }: TerminalGridProps) {
   if (terminals.length === 0) {
     return (
@@ -39,6 +42,7 @@ export function TerminalGrid({
               ptyId={terminal.ptyId}
               label={terminal.label}
               branch={terminal.branch}
+              theme={theme}
               isMaximized={true}
               isFocused={true}
               onClose={() => onClose(terminal.id)}
@@ -65,6 +69,7 @@ export function TerminalGrid({
             ptyId={t.ptyId}
             label={t.label}
             branch={t.branch}
+            theme={theme}
             isMaximized={false}
             isFocused={focusedId === t.id}
             onClose={() => onClose(t.id)}
@@ -81,6 +86,7 @@ export function TerminalGrid({
               ptyId={t.ptyId}
               label={t.label}
               branch={t.branch}
+              theme={theme}
               isMaximized={false}
               isFocused={focusedId === t.id}
               onClose={() => onClose(t.id)}
