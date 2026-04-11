@@ -115,6 +115,11 @@ body {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  transition: width 0.2s ease;
+}
+
+.side-pane-collapsed {
+  width: 42px;
 }
 
 .side-pane-header {
@@ -123,6 +128,44 @@ body {
   text-transform: uppercase;
   letter-spacing: 1px;
   color: var(--text-header);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.side-pane-collapsed .side-pane-header {
+  padding: 12px 0;
+  justify-content: center;
+}
+
+.side-pane-toggle {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font-size: 10px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.side-pane-toggle:hover {
+  color: var(--accent);
+}
+
+.side-pane-settings-icon {
+  background: none;
+  border: none;
+  color: var(--text-header);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 10px;
+  text-align: center;
+  margin-top: auto;
+}
+
+.side-pane-settings-icon:hover {
+  color: var(--accent);
 }
 
 .side-pane-list {
@@ -635,6 +678,183 @@ body {
 .settings-theme-label {
   font-size: 11px;
   color: var(--text-secondary);
+}
+
+/* === Diff Panel === */
+.diff-panel {
+  flex: 1;
+  background: var(--bg-side);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+}
+
+.diff-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.diff-title {
+  font-size: 12px;
+  color: var(--accent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.diff-controls {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.diff-btn {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.diff-btn:hover {
+  color: var(--text-secondary);
+  background: var(--btn-hover);
+}
+
+.diff-btn-close:hover {
+  color: var(--error);
+}
+
+.diff-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.diff-loading,
+.diff-empty {
+  padding: 16px 8px;
+  color: var(--text-tertiary);
+  font-size: 13px;
+  text-align: center;
+}
+
+.diff-file {
+  margin-bottom: 4px;
+}
+
+.diff-file-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 6px 8px;
+  background: var(--bg-panel);
+  border: none;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: background 0.2s;
+}
+
+.diff-file-header:hover {
+  background: var(--btn-hover);
+}
+
+.diff-file-toggle {
+  font-size: 8px;
+  color: var(--text-tertiary);
+  width: 10px;
+  flex-shrink: 0;
+}
+
+.diff-file-path {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: 'Cascadia Code', 'Consolas', monospace;
+  font-size: 11px;
+}
+
+.diff-file-stats {
+  display: flex;
+  gap: 6px;
+  font-size: 11px;
+  font-family: 'Cascadia Code', 'Consolas', monospace;
+  flex-shrink: 0;
+}
+
+.diff-stat-add {
+  color: #4ec970;
+}
+
+.diff-stat-remove {
+  color: var(--error);
+}
+
+.diff-file-content {
+  margin: 2px 0 4px 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.diff-hunk-header {
+  padding: 4px 8px;
+  background: var(--bg-panel);
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-family: 'Cascadia Code', 'Consolas', monospace;
+  border-bottom: 1px solid var(--border);
+}
+
+.diff-line {
+  display: flex;
+  font-family: 'Cascadia Code', 'Consolas', monospace;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.diff-line-prefix {
+  width: 16px;
+  flex-shrink: 0;
+  text-align: center;
+  user-select: none;
+}
+
+.diff-line-content {
+  flex: 1;
+  white-space: pre;
+  overflow-x: auto;
+  padding-right: 8px;
+}
+
+.diff-line-add {
+  background: rgba(78, 201, 112, 0.1);
+  color: #4ec970;
+}
+
+.diff-line-remove {
+  background: rgba(255, 85, 85, 0.1);
+  color: var(--error);
+}
+
+.diff-line-context {
+  color: var(--text-tertiary);
 }
 
 /* === Scrollbar === */
