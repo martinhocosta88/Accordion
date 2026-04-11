@@ -938,6 +938,29 @@ body {
   color: var(--text-secondary);
 }
 
+.diff-footer {
+  padding: 10px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.diff-finalize-btn {
+  width: 100%;
+  padding: 8px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.2s;
+}
+
+.diff-finalize-btn:hover {
+  filter: brightness(1.15);
+}
+
 /* === Scrollbar === */
 ::-webkit-scrollbar {
   width: 8px;

@@ -276,6 +276,19 @@ export function DiffPanel({ cwd, label, ptyId, onClose }: DiffPanelProps) {
             );
           })}
       </div>
+      <div className="diff-footer">
+        <button
+          className="diff-finalize-btn"
+          onClick={() => {
+            window.electronAPI.pty.write(
+              ptyId,
+              'I have finished reviewing the diff. Please apply all the feedback I provided above.\r'
+            );
+          }}
+        >
+          Finalize Review
+        </button>
+      </div>
     </div>
   );
 }
