@@ -3,6 +3,7 @@ import { Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
 import { getXtermTheme } from '../lib/themes';
+import { usePtyData } from '../hooks/usePtyData';
 import type { ThemeName } from '../types';
 
 interface TerminalPanelProps {
@@ -34,6 +35,11 @@ export function TerminalPanel({
   const terminalRef = useRef<Terminal | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
 
+  // Centralized data dispatch — one global listener, not one per terminal
+  usePtyData(ptyId, (data) => {
+    terminalRef.current?.write(data);
+  });
+
   // Initialize xterm.js and connect to pty
   useEffect(() => {
     if (!containerRef.current) return;
@@ -52,28 +58,18 @@ export function TerminalPanel({
     terminalRef.current = terminal;
     fitAddonRef.current = fitAddon;
 
-    // Fit after a brief delay to let the container size settle
     const rafId = requestAnimationFrame(() => {
       fitAddon.fit();
       window.electronAPI.pty.resize(ptyId, terminal.cols, terminal.rows);
     });
 
-    // Send keystrokes to pty
     const dataDisposable = terminal.onData((data) => {
       window.electronAPI.pty.write(ptyId, data);
-    });
-
-    // Receive pty output
-    const unsubData = window.electronAPI.pty.onData((id, data) => {
-      if (id === ptyId) {
-        terminal.write(data);
-      }
     });
 
     return () => {
       cancelAnimationFrame(rafId);
       dataDisposable.dispose();
-      unsubData();
       terminal.dispose();
       terminalRef.current = null;
       fitAddonRef.current = null;
@@ -87,11 +83,14 @@ export function TerminalPanel({
     }
   }, [theme]);
 
-  // Re-fit on container size changes (grid reflow, maximize, window resize)
+  // Re-fit on container size changes
   useEffect(() => {
     if (!containerRef.current) return;
 
+    let disposed = false;
+
     const refit = () => {
+      if (disposed) return;
       if (fitAddonRef.current && terminalRef.current) {
         fitAddonRef.current.fit();
         window.electronAPI.pty.resize(
@@ -108,6 +107,7 @@ export function TerminalPanel({
     observer.observe(containerRef.current);
 
     return () => {
+      disposed = true;
       observer.disconnect();
     };
   }, [ptyId]);

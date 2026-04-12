@@ -23,11 +23,13 @@ export function useTerminals() {
   // Listen for pty exit events (shell process died)
   useEffect(() => {
     const unsubExit = window.electronAPI.pty.onExit((ptyId) => {
-      setTerminals((prev) => prev.filter((t) => t.ptyId !== ptyId));
-      setMaximizedId((prev) => {
-        // We need to check if the exited pty was the maximized one
-        // This is handled by the cleanup in the next render cycle
-        return prev;
+      setTerminals((prev) => {
+        const exited = prev.find((t) => t.ptyId === ptyId);
+        if (exited) {
+          setMaximizedId((m) => (m === exited.id ? null : m));
+          setFocusedId((f) => (f === exited.id ? null : f));
+        }
+        return prev.filter((t) => t.ptyId !== ptyId);
       });
     });
     return unsubExit;
