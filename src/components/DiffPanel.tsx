@@ -87,7 +87,9 @@ export function DiffPanel({ cwd, label, ptyId, onClose }: DiffPanelProps) {
   useEffect(() => {
     setLoading(true);
     window.electronAPI.git.getDiff(cwd).then((raw) => {
-      setFiles(parseDiff(raw));
+      const parsed = parseDiff(raw);
+      setFiles(parsed);
+      setExpanded(new Set(parsed.map((f) => f.path)));
       setLoading(false);
     });
   }, [cwd]);
@@ -115,7 +117,9 @@ export function DiffPanel({ cwd, label, ptyId, onClose }: DiffPanelProps) {
     setLoading(true);
     setCommentTarget(null);
     window.electronAPI.git.getDiff(cwd).then((raw) => {
-      setFiles(parseDiff(raw));
+      const parsed = parseDiff(raw);
+      setFiles(parsed);
+      setExpanded(new Set(parsed.map((f) => f.path)));
       setLoading(false);
     });
   };

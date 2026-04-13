@@ -91,21 +91,13 @@ export function TerminalPanel({
     if (!containerRef.current) return;
 
     let disposed = false;
-    let prevCols = terminalRef.current?.cols ?? 0;
-
     const refit = () => {
       if (disposed) return;
       if (fitAddonRef.current && terminalRef.current && containerRef.current) {
         const { clientWidth, clientHeight } = containerRef.current;
         if (clientWidth < 10 || clientHeight < 10) return;
         const term = terminalRef.current;
-        const oldCols = prevCols;
         fitAddonRef.current.fit();
-        prevCols = term.cols;
-        // Clear scrollback when columns change to prevent reflow artifacts
-        if (oldCols > 0 && oldCols !== term.cols) {
-          term.clear();
-        }
         window.electronAPI.pty.resize(ptyId, term.cols, term.rows);
       }
     };
