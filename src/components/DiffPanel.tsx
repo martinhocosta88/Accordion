@@ -284,6 +284,7 @@ export function DiffPanel({ cwd, label, ptyId, onClose }: DiffPanelProps) {
               ptyId,
               'I have finished reviewing the diff. Please apply all the feedback I provided above.\r'
             );
+            onClose();
           }}
         >
           Finalize Review

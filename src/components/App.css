@@ -385,24 +385,28 @@ body {
 .terminal-grid {
   flex: 1;
   padding: 8px;
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: 8px;
   min-width: 0;
+  min-height: 0;
 }
 
 .terminal-grid.empty {
+  display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-tertiary);
   font-size: 15px;
 }
 
-.grid-row {
-  flex: 1;
-  display: flex;
-  gap: 8px;
+.terminal-cell {
+  min-width: 0;
   min-height: 0;
+  display: flex;
+}
+
+.terminal-cell-hidden {
+  display: none;
 }
 
 /* === Terminal Panel === */

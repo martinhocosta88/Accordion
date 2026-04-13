@@ -37,7 +37,10 @@ export function TerminalPanel({
 
   // Centralized data dispatch — one global listener, not one per terminal
   usePtyData(ptyId, (data) => {
-    terminalRef.current?.write(data);
+    if (terminalRef.current) {
+      terminalRef.current.write(data);
+      terminalRef.current.scrollToBottom();
+    }
   });
 
   // Initialize xterm.js and connect to pty
@@ -88,16 +91,22 @@ export function TerminalPanel({
     if (!containerRef.current) return;
 
     let disposed = false;
+    let prevCols = terminalRef.current?.cols ?? 0;
 
     const refit = () => {
       if (disposed) return;
-      if (fitAddonRef.current && terminalRef.current) {
+      if (fitAddonRef.current && terminalRef.current && containerRef.current) {
+        const { clientWidth, clientHeight } = containerRef.current;
+        if (clientWidth < 10 || clientHeight < 10) return;
+        const term = terminalRef.current;
+        const oldCols = prevCols;
         fitAddonRef.current.fit();
-        window.electronAPI.pty.resize(
-          ptyId,
-          terminalRef.current.cols,
-          terminalRef.current.rows
-        );
+        prevCols = term.cols;
+        // Clear scrollback when columns change to prevent reflow artifacts
+        if (oldCols > 0 && oldCols !== term.cols) {
+          term.clear();
+        }
+        window.electronAPI.pty.resize(ptyId, term.cols, term.rows);
       }
     };
 

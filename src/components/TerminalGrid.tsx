@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { TerminalPanel } from './TerminalPanel';
 import { DiffPanel } from './DiffPanel';
 import { computeGridLayout } from '../lib/grid-layout';
@@ -29,6 +30,26 @@ export function TerminalGrid({
   onCloseDiff,
   theme,
 }: TerminalGridProps) {
+  const diffTerminal = diffTerminalId
+    ? terminals.find((t) => t.id === diffTerminalId)
+    : null;
+
+  const gridStyle = useMemo((): React.CSSProperties => {
+    if (diffTerminalId) {
+      return { gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr' };
+    }
+    if (maximizedId) {
+      return { gridTemplateColumns: '1fr', gridTemplateRows: '1fr' };
+    }
+    const layout = computeGridLayout(terminals.length);
+    const cols = layout.row1Count || 1;
+    const rows = layout.row2Count > 0 ? 2 : 1;
+    return {
+      gridTemplateColumns: `repeat(${cols}, 1fr)`,
+      gridTemplateRows: `repeat(${rows}, 1fr)`,
+    };
+  }, [terminals.length, diffTerminalId, maximizedId]);
+
   if (terminals.length === 0) {
     return (
       <div className="terminal-grid empty">
@@ -37,106 +58,40 @@ export function TerminalGrid({
     );
   }
 
-  // Diff mode: show only the target terminal + diff panel, each taking half
-  if (diffTerminalId) {
-    const terminal = terminals.find((t) => t.id === diffTerminalId);
-    if (terminal) {
-      return (
-        <div className="terminal-grid">
-          <div className="grid-row">
-            <TerminalPanel
-              key={terminal.id}
-              ptyId={terminal.ptyId}
-              label={terminal.label}
-              branch={terminal.branch}
-              theme={theme}
-              isMaximized={false}
-              isFocused={true}
-              onClose={() => onClose(terminal.id)}
-              onToggleMaximize={() => onToggleMaximize(terminal.id)}
-              onFocus={() => onFocus(terminal.id)}
-              onShowDiff={() => onShowDiff(terminal.id)}
-            />
-            <DiffPanel
-              cwd={terminal.cwd}
-              label={terminal.label}
-              ptyId={terminal.ptyId}
-              onClose={onCloseDiff}
-            />
-          </div>
-        </div>
-      );
-    }
-  }
-
-  // Maximized mode: show only the maximized terminal
-  if (maximizedId) {
-    const terminal = terminals.find((t) => t.id === maximizedId);
-    if (terminal) {
-      return (
-        <div className="terminal-grid">
-          <div className="grid-row">
-            <TerminalPanel
-              key={terminal.id}
-              ptyId={terminal.ptyId}
-              label={terminal.label}
-              branch={terminal.branch}
-              theme={theme}
-              isMaximized={true}
-              isFocused={true}
-              onClose={() => onClose(terminal.id)}
-              onToggleMaximize={() => onToggleMaximize(terminal.id)}
-              onFocus={() => onFocus(terminal.id)}
-              onShowDiff={() => onShowDiff(terminal.id)}
-            />
-          </div>
-        </div>
-      );
-    }
-  }
-
-  // Normal grid mode
-  const layout = computeGridLayout(terminals.length);
-  const row1 = terminals.slice(0, layout.row1Count);
-  const row2 = terminals.slice(layout.row1Count, layout.row1Count + layout.row2Count);
+  const isVisible = (id: string) => {
+    if (diffTerminalId) return id === diffTerminalId;
+    if (maximizedId) return id === maximizedId;
+    return true;
+  };
 
   return (
-    <div className="terminal-grid">
-      <div className="grid-row">
-        {row1.map((t) => (
+    <div className="terminal-grid" style={gridStyle}>
+      {terminals.map((t) => (
+        <div
+          key={t.id}
+          className={isVisible(t.id) ? 'terminal-cell' : 'terminal-cell-hidden'}
+        >
           <TerminalPanel
-            key={t.id}
             ptyId={t.ptyId}
             label={t.label}
             branch={t.branch}
             theme={theme}
-            isMaximized={false}
-            isFocused={focusedId === t.id}
+            isMaximized={maximizedId === t.id}
+            isFocused={diffTerminalId ? t.id === diffTerminalId : focusedId === t.id}
             onClose={() => onClose(t.id)}
             onToggleMaximize={() => onToggleMaximize(t.id)}
             onFocus={() => onFocus(t.id)}
             onShowDiff={() => onShowDiff(t.id)}
           />
-        ))}
-      </div>
-      {row2.length > 0 && (
-        <div className="grid-row">
-          {row2.map((t) => (
-            <TerminalPanel
-              key={t.id}
-              ptyId={t.ptyId}
-              label={t.label}
-              branch={t.branch}
-              theme={theme}
-              isMaximized={false}
-              isFocused={focusedId === t.id}
-              onClose={() => onClose(t.id)}
-              onToggleMaximize={() => onToggleMaximize(t.id)}
-              onFocus={() => onFocus(t.id)}
-              onShowDiff={() => onShowDiff(t.id)}
-            />
-          ))}
         </div>
+      ))}
+      {diffTerminal && (
+        <DiffPanel
+          cwd={diffTerminal.cwd}
+          label={diffTerminal.label}
+          ptyId={diffTerminal.ptyId}
+          onClose={onCloseDiff}
+        />
       )}
     </div>
   );
