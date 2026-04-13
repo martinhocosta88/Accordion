@@ -12,15 +12,23 @@ Accordion opens a terminal grid where each pane runs Claude Code in a different 
 
 **Multi-Terminal Grid** — Open up to 6 terminals in an auto-arranged grid (1-3 per row). Each terminal runs Claude Code automatically on launch.
 
-**Repository Browser** — Side pane lists configured repos with git branch names. Navigate two levels deep into subdirectories to open terminals in specific folders.
+**Repository Browser** — Side pane lists configured repos with git branch names. Repos and worktrees are distinguished with icons (📦 repo, 🔗 worktree), and plain directories are hidden unless added as a top-level path. Navigate two levels deep into subdirectories to open terminals in specific folders.
 
-**Git Diff Viewer** — Click the delta button on any terminal header to see unstaged changes in a split view. Files are listed with +/- counts and expand to show colored diffs.
+**Active Terminal Highlighting** — Repos with open terminals show an accent border. The folder matching the currently focused terminal gets a distinct background highlight, so you always know which repo you're working in.
+
+**Changed File Count** — Each terminal header shows the number of uncommitted changed files next to the diff button, updated automatically after git operations.
+
+**Git Diff Viewer** — Click the delta button on any terminal header to see unstaged changes in a split view. Files are listed with +/- counts and expand to show colored diffs. Untracked files are included alongside tracked changes.
 
 **Inline Diff Comments** — Click any changed line in the diff view to leave feedback. Comments are sent directly to the Claude session with file path and line context, so Claude can act on your review.
 
 **Four Color Themes** — Switch between Accordion (signature indigo), Carbon (neutral dark), Midnight (deep navy), and Light from the settings dialog. Themes apply instantly to the full UI and terminal colors.
 
-**Git Operations** — Right-click any repo folder to fetch from remotes, switch branches (with filter search), or revert uncommitted changes. Branch names are shown below each folder.
+**Git Operations** — Right-click any repo folder to access Fetch, Switch Branch (with filter search), Revert, or Go to Folder. Each menu item has an icon, and destructive actions are visually separated. Branch names are shown below each folder.
+
+**Zoom Control** — Adjust the UI zoom level from the sidebar footer (50%-200%).
+
+**Repo Management** — Add, remove, and reorder repositories in the settings dialog. Drag repos up or down to control their sidebar order.
 
 **Collapsible Side Pane** — Collapse the repository browser to a narrow icon strip to maximize terminal space.
 
@@ -78,6 +86,8 @@ src/
 
   hooks/
     useTerminals.ts        # Terminal state management
+    useGitActions.ts       # Git operations + context menu
+    usePtyData.ts          # Centralized PTY data dispatch
 
   lib/
     grid-layout.ts         # Row distribution calculator
@@ -101,8 +111,11 @@ src/
 | Git fetch | Right-click a repo folder > Fetch |
 | Switch branch | Right-click a repo folder > Switch Branch |
 | Revert changes | Right-click a repo folder > Revert |
+| Open in explorer | Right-click a repo folder > Go to Folder |
 | Collapse sidebar | Click the arrow in the side pane header |
+| Zoom in/out | Use +/- buttons in the sidebar footer |
 | Add repos | Settings > + Add Repository |
+| Reorder repos | Settings > Use ▲/▼ arrows next to each repo |
 
 ## Tests
 
