@@ -19,6 +19,7 @@ export interface ElectronAPI {
     get(): Promise<AppConfig>;
     addRepo(path: string): Promise<AppConfig>;
     removeRepo(path: string): Promise<AppConfig>;
+    reorderRepos(repos: string[]): Promise<AppConfig>;
     setTheme(theme: string): Promise<AppConfig>;
   };
   dialog: {

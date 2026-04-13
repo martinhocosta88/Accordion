@@ -675,6 +675,40 @@ body {
   margin-right: 12px;
 }
 
+.settings-repo-sort {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.settings-sort-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 9px;
+  width: 20px;
+  height: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background 0.2s, color 0.2s;
+}
+
+.settings-sort-btn:hover:not(:disabled) {
+  background: var(--btn-hover);
+  color: var(--text-primary);
+}
+
+.settings-sort-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
 .settings-repo-remove {
   background: none;
   border: 1px solid #3a2a2a;

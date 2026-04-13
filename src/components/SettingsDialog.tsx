@@ -34,6 +34,15 @@ export function SettingsDialog({
     onConfigChange(newConfig);
   };
 
+  const handleMove = async (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (target < 0 || target >= config.repos.length) return;
+    const reordered = [...config.repos];
+    [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
+    const newConfig = await window.electronAPI.config.reorderRepos(reordered);
+    onConfigChange(newConfig);
+  };
+
   const handleThemeChange = async (themeName: string) => {
     const newConfig = await window.electronAPI.config.setTheme(themeName);
     onConfigChange(newConfig);
@@ -78,8 +87,26 @@ export function SettingsDialog({
             {config.repos.length === 0 ? (
               <p className="settings-empty">No repositories added yet.</p>
             ) : (
-              config.repos.map((repo) => (
+              config.repos.map((repo, i) => (
                 <div key={repo} className="settings-repo-item">
+                  <div className="settings-repo-sort">
+                    <button
+                      className="settings-sort-btn"
+                      onClick={() => handleMove(i, -1)}
+                      disabled={i === 0}
+                      title="Move up"
+                    >
+                      {'\u25B2'}
+                    </button>
+                    <button
+                      className="settings-sort-btn"
+                      onClick={() => handleMove(i, 1)}
+                      disabled={i === config.repos.length - 1}
+                      title="Move down"
+                    >
+                      {'\u25BC'}
+                    </button>
+                  </div>
                   <span className="settings-repo-path">{repo}</span>
                   <button
                     className="settings-repo-remove"

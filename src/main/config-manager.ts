@@ -64,6 +64,18 @@ export function removeRepo(configPath: string, repoPath: string): AppConfig {
   return config;
 }
 
+export function reorderRepos(configPath: string, repos: string[]): AppConfig {
+  const config = readConfig(configPath);
+  // Only accept paths that already exist in config
+  const existing = new Set(config.repos.map(normalizePath));
+  const filtered = repos.filter((r) => existing.has(normalizePath(r)));
+  if (filtered.length === config.repos.length) {
+    config.repos = filtered;
+    writeConfig(configPath, config);
+  }
+  return config;
+}
+
 export function setTheme(configPath: string, theme: string): AppConfig {
   if (!(VALID_THEMES as readonly string[]).includes(theme)) {
     return readConfig(configPath);

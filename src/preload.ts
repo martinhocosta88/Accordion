@@ -6,6 +6,7 @@ const api: ElectronAPI = {
     get: () => ipcRenderer.invoke('config:get'),
     addRepo: (path: string) => ipcRenderer.invoke('config:add-repo', path),
     removeRepo: (path: string) => ipcRenderer.invoke('config:remove-repo', path),
+    reorderRepos: (repos: string[]) => ipcRenderer.invoke('config:reorder-repos', repos),
     setTheme: (theme: string) => ipcRenderer.invoke('config:set-theme', theme),
   },
   dialog: {
