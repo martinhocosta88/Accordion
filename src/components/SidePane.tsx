@@ -7,7 +7,10 @@ const ZOOM_MIN = 0.5;
 const ZOOM_MAX = 2.0;
 
 function ZoomControl() {
-  const [zoom, setZoom] = useState(() => window.zoomAPI.getZoom());
+  const [zoom, setZoom] = useState(() => {
+    const raw = window.zoomAPI.getZoom();
+    return Math.round(Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, raw)) * 100) / 100;
+  });
 
   const applyZoom = (factor: number) => {
     const clamped = Math.round(Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, factor)) * 100) / 100;

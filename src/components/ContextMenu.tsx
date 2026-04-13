@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 
 export interface MenuItem {
   label: string;
+  icon?: string;
   disabled?: boolean;
+  separator?: boolean;
   onClick: () => void;
 }
 
@@ -50,19 +52,22 @@ export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
       style={{ left: position.left, top: position.top }}
     >
       {items.map((item) => (
-        <button
-          key={item.label}
-          className={`context-menu-item${item.disabled ? ' context-menu-item-disabled' : ''}`}
-          onClick={() => {
-            if (!item.disabled) {
-              item.onClick();
-              onClose();
-            }
-          }}
-          disabled={item.disabled}
-        >
-          {item.label}
-        </button>
+        <div key={item.label}>
+          {item.separator && <div className="context-menu-separator" />}
+          <button
+            className={`context-menu-item${item.disabled ? ' context-menu-item-disabled' : ''}`}
+            onClick={() => {
+              if (!item.disabled) {
+                item.onClick();
+                onClose();
+              }
+            }}
+            disabled={item.disabled}
+          >
+            {item.icon && <span className="context-menu-icon">{item.icon}</span>}
+            {item.label}
+          </button>
+        </div>
       ))}
     </div>
   );

@@ -35,9 +35,21 @@ export function writeConfig(configPath: string, config: AppConfig): void {
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
 }
 
+function normalizePath(p: string): string {
+  return path.resolve(p).toLowerCase();
+}
+
 export function addRepo(configPath: string, repoPath: string): AppConfig {
   const config = readConfig(configPath);
-  if (!config.repos.includes(repoPath)) {
+  const normalized = normalizePath(repoPath);
+  const alreadyExists = config.repos.some((r) => normalizePath(r) === normalized);
+  if (!alreadyExists) {
+    try {
+      const stat = fs.statSync(repoPath);
+      if (!stat.isDirectory()) return config;
+    } catch {
+      return config;
+    }
     config.repos.push(repoPath);
     writeConfig(configPath, config);
   }
@@ -46,7 +58,8 @@ export function addRepo(configPath: string, repoPath: string): AppConfig {
 
 export function removeRepo(configPath: string, repoPath: string): AppConfig {
   const config = readConfig(configPath);
-  config.repos = config.repos.filter((r) => r !== repoPath);
+  const normalized = normalizePath(repoPath);
+  config.repos = config.repos.filter((r) => normalizePath(r) !== normalized);
   writeConfig(configPath, config);
   return config;
 }

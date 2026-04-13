@@ -14,7 +14,7 @@ function ensureGlobalListener() {
 }
 
 function releaseGlobalListener() {
-  if (globalUnsub && refCount === 0) {
+  if (refCount === 0 && globalUnsub) {
     globalUnsub();
     globalUnsub = null;
   }
@@ -34,7 +34,8 @@ export function usePtyData(ptyId: string, handler: PtyDataHandler) {
     return () => {
       handlers.delete(ptyId);
       refCount--;
-      releaseGlobalListener();
+      // Defer release so strict mode re-mount can re-acquire before teardown completes
+      queueMicrotask(releaseGlobalListener);
     };
   }, [ptyId]);
 }

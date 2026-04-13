@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, ipcMain, dialog } from 'electron';
+import { app, BrowserWindow, Menu, ipcMain, dialog, shell } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import { execFile } from 'child_process';
@@ -8,6 +8,7 @@ import {
   writePty,
   resizePty,
   closePty,
+  hasPty,
   closeAllPtys,
 } from './main/pty-manager';
 
@@ -71,6 +72,12 @@ ipcMain.handle('dialog:select-directory', async () => {
   return result.filePaths[0];
 });
 
+// Shell IPC handler
+ipcMain.handle('shell:open-path', async (_event, dirPath: string) => {
+  if (!isPathWithinRepos(dirPath)) return;
+  shell.openPath(path.resolve(dirPath));
+});
+
 // Config cache to avoid reading from disk on every IPC call
 let configCache: ReturnType<typeof readConfig> | null = null;
 
@@ -86,9 +93,9 @@ function invalidateConfigCache(): void {
 // Validate that a path is within a configured repo root
 function isPathWithinRepos(targetPath: string): boolean {
   const config = getCachedConfig();
-  const normalized = path.resolve(targetPath);
+  const normalized = path.resolve(targetPath).toLowerCase();
   return config.repos.some((repo) => {
-    const resolved = path.resolve(repo);
+    const resolved = path.resolve(repo).toLowerCase();
     return normalized === resolved || normalized.startsWith(resolved + path.sep);
   });
 }
@@ -98,17 +105,37 @@ function isValidBranchName(name: string): boolean {
   return name.length > 0 && !name.startsWith('-');
 }
 
+// Detect whether a path is a git repo, worktree, or plain directory
+async function detectGitType(dirPath: string): Promise<'repo' | 'worktree' | 'dir'> {
+  try {
+    const gitStat = await fs.promises.stat(path.join(dirPath, '.git'));
+    return gitStat.isDirectory() ? 'repo' : 'worktree';
+  } catch {
+    return 'dir';
+  }
+}
+
 // Filesystem IPC handlers
 ipcMain.handle('fs:list-subdirectories', async (_event, dirPath: string) => {
   if (!isPathWithinRepos(dirPath)) return [];
   try {
     const entries = await fs.promises.readdir(dirPath, { withFileTypes: true });
-    return entries
-      .filter((e) => e.isDirectory() && !e.name.startsWith('.'))
-      .map((e) => ({ name: e.name, path: path.join(dirPath, e.name) }));
+    const dirs = entries.filter((e) => e.isDirectory() && !e.name.startsWith('.'));
+    return Promise.all(
+      dirs.map(async (e) => {
+        const fullPath = path.join(dirPath, e.name);
+        const type = await detectGitType(fullPath);
+        return { name: e.name, path: fullPath, type };
+      })
+    );
   } catch {
     return [];
   }
+});
+
+ipcMain.handle('fs:detect-git-type', async (_event, dirPath: string) => {
+  if (!isPathWithinRepos(dirPath)) return 'dir';
+  return detectGitType(dirPath);
 });
 
 ipcMain.handle('fs:directory-exists', async (_event, dirPath: string) => {
@@ -132,33 +159,52 @@ ipcMain.handle('git:get-branch', async (_event, dirPath: string) => {
   });
 });
 
+ipcMain.handle('git:changed-file-count', async (_event, dirPath: string) => {
+  if (!isPathWithinRepos(dirPath)) return 0;
+  return new Promise<number>((resolve) => {
+    execFile('git', ['status', '--short'], { cwd: dirPath, maxBuffer: 1024 * 1024 }, (err, stdout) => {
+      if (err) return resolve(0);
+      resolve(stdout.split('\n').filter(Boolean).length);
+    });
+  });
+});
+
 ipcMain.handle('git:get-diff', async (_event, dirPath: string) => {
   if (!isPathWithinRepos(dirPath)) return '';
 
   const run = (args: string[]): Promise<string> =>
     new Promise((resolve) => {
       execFile('git', args, { cwd: dirPath, maxBuffer: 1024 * 1024 }, (err, stdout) => {
-        resolve(err ? '' : stdout);
+        // git diff --no-index exits 1 when differences exist; still has valid stdout
+        resolve(stdout || '');
       });
     });
 
   // Tracked file changes
   const trackedDiff = await run(['diff']);
 
-  // Untracked files
+  // Untracked files — diff in parallel batches
   const untrackedList = await run(['ls-files', '--others', '--exclude-standard']);
-  let untrackedDiff = '';
-  for (const file of untrackedList.split('\n').filter(Boolean)) {
-    const emptyRef = process.platform === 'win32' ? 'NUL' : '/dev/null';
-    const content = await run(['diff', '--no-index', '--', emptyRef, file]);
-    // Rewrite header so the parser sees a clean path
-    untrackedDiff += content.replace(
-      /^diff --git .+$/m,
-      `diff --git a/${file} b/${file}`
-    ).replace(/^(\+\+\+) .+$/m, `+++ b/${file}`) + '\n';
+  const untrackedFiles = untrackedList.split('\n').filter(Boolean);
+  const emptyRef = process.platform === 'win32' ? 'NUL' : '/dev/null';
+
+  const BATCH_SIZE = 5;
+  const untrackedParts: string[] = [];
+  for (let i = 0; i < untrackedFiles.length; i += BATCH_SIZE) {
+    const batch = untrackedFiles.slice(i, i + BATCH_SIZE);
+    const results = await Promise.all(
+      batch.map(async (file) => {
+        const content = await run(['diff', '--no-index', '--', emptyRef, file]);
+        return content.replace(
+          /^diff --git .+$/m,
+          `diff --git a/${file} b/${file}`
+        ).replace(/^(\+\+\+) .+$/m, `+++ b/${file}`) + '\n';
+      })
+    );
+    untrackedParts.push(...results);
   }
 
-  return trackedDiff + untrackedDiff;
+  return trackedDiff + untrackedParts.join('');
 });
 
 ipcMain.handle('git:fetch', async (_event, dirPath: string) => {
@@ -248,6 +294,10 @@ ipcMain.on('pty:resize', (_event, id: string, cols: number, rows: number) => {
 ipcMain.on('pty:close', (_event, id: string) => {
   if (typeof id !== 'string') return;
   closePty(id);
+});
+ipcMain.handle('pty:has', (_event, id: string) => {
+  if (typeof id !== 'string') return false;
+  return hasPty(id);
 });
 
 // App lifecycle

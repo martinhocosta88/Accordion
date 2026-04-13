@@ -38,7 +38,9 @@ function parseDiff(raw: string): DiffFile[] {
         currentHunk = { header: line, lines: [] };
         hunks.push(currentHunk);
       } else if (currentHunk) {
-        if (line.startsWith('+')) {
+        if (line.startsWith('\\ ')) {
+          // Skip "\ No newline at end of file" markers
+        } else if (line.startsWith('+')) {
           currentHunk.lines.push({ type: 'add', content: line.slice(1) });
           additions++;
         } else if (line.startsWith('-')) {
@@ -91,6 +93,9 @@ export function DiffPanel({ cwd, label, ptyId, onClose }: DiffPanelProps) {
       setFiles(parsed);
       setExpanded(new Set(parsed.map((f) => f.path)));
       setLoading(false);
+    }).catch(() => {
+      setFiles([]);
+      setLoading(false);
     });
   }, [cwd]);
 
@@ -121,6 +126,9 @@ export function DiffPanel({ cwd, label, ptyId, onClose }: DiffPanelProps) {
       setFiles(parsed);
       setExpanded(new Set(parsed.map((f) => f.path)));
       setLoading(false);
+    }).catch(() => {
+      setFiles([]);
+      setLoading(false);
     });
   };
 
@@ -133,6 +141,12 @@ export function DiffPanel({ cwd, label, ptyId, onClose }: DiffPanelProps) {
       setCommentTarget(target);
       setCommentText('');
     }
+  };
+
+  const safePtyWrite = async (data: string) => {
+    const alive = await window.electronAPI.pty.has(ptyId);
+    if (!alive) return;
+    window.electronAPI.pty.write(ptyId, data);
   };
 
   const sendComment = () => {
@@ -155,7 +169,7 @@ export function DiffPanel({ cwd, label, ptyId, onClose }: DiffPanelProps) {
       commentText.trim(),
     ].join('\n');
 
-    window.electronAPI.pty.write(ptyId, message + '\n');
+    safePtyWrite(message + '\n');
 
     setCommentTarget(null);
     setCommentText('');
@@ -283,9 +297,8 @@ export function DiffPanel({ cwd, label, ptyId, onClose }: DiffPanelProps) {
       <div className="diff-footer">
         <button
           className="diff-finalize-btn"
-          onClick={() => {
-            window.electronAPI.pty.write(
-              ptyId,
+          onClick={async () => {
+            await safePtyWrite(
               'I have finished reviewing the diff. Please apply all the feedback I provided above.\r'
             );
             onClose();

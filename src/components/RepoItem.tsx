@@ -3,7 +3,17 @@ import { ContextMenu } from './ContextMenu';
 import { BranchPicker } from './BranchPicker';
 import { ConfirmDialog } from './ConfirmDialog';
 import { useGitActions } from '../hooks/useGitActions';
-import type { SubDirectory } from '../types';
+import type { DirType, SubDirectory } from '../types';
+
+const ICON_REPO = '\uD83D\uDCE6';     // 📦
+const ICON_WORKTREE = '\uD83D\uDD17';  // 🔗
+const ICON_DIR = '\uD83D\uDCC1';       // 📁
+
+function gitIcon(type: DirType): string {
+  if (type === 'worktree') return ICON_WORKTREE;
+  if (type === 'repo') return ICON_REPO;
+  return ICON_DIR;
+}
 
 interface SubDirItemProps {
   sub: SubDirectory;
@@ -23,18 +33,17 @@ function SubDirItem({
   activeTerminalPaths,
 }: SubDirItemProps) {
   const [expanded, setExpanded] = useState(false);
-  const [children, setChildren] = useState<SubDirectory[]>([]);
+  const [children, setChildren] = useState<SubDirectory[] | null>(null);
   const isActive = activeTerminalPaths.includes(sub.path);
 
   const git = useGitActions(sub.path);
 
-  const handleToggle = async () => {
-    if (!expanded) {
-      const dirs = await window.electronAPI.fs.listSubdirectories(sub.path);
-      setChildren(dirs);
-    }
-    setExpanded(!expanded);
-  };
+  const gitChildren = children ? children.filter((c) => c.type !== 'dir') : [];
+  const hasExpandableChildren = children === null || gitChildren.length > 0;
+
+  useEffect(() => {
+    window.electronAPI.fs.listSubdirectories(sub.path).then(setChildren).catch(() => setChildren([]));
+  }, [sub.path]);
 
   const handleClick = () => {
     if (!disabled) {
@@ -48,26 +57,28 @@ function SubDirItem({
         className={`repo-subdir${isActive ? ' repo-subdir-active' : ''}`}
         onContextMenu={(e) => git.handleContextMenu(e, true)}
       >
-        <button className="repo-toggle" onClick={handleToggle}>
-          {expanded ? '\u25BC' : '\u25B6'}
-        </button>
         <div className="repo-subdir-content">
           <button
             className="repo-subdir-name"
             onClick={handleClick}
             disabled={disabled}
           >
-            <span className="repo-icon">{'\uD83D\uDCC2'}</span>
-            {sub.name}
+            <span className="repo-icon">{gitIcon(sub.type)}</span>
+            <span className="repo-text-truncate">{sub.name}</span>
           </button>
           {git.branch && (
             <div className="repo-branch">{'\u2387'} {git.branch}</div>
           )}
         </div>
+        {hasExpandableChildren && (
+          <button className="repo-toggle" onClick={() => setExpanded(!expanded)}>
+            {expanded ? '\u25BC' : '\u25B6'}
+          </button>
+        )}
       </div>
-      {expanded && children.length > 0 && (
+      {expanded && gitChildren.length > 0 && (
         <div className="repo-subdirs">
-          {children.map((child) => {
+          {gitChildren.map((child) => {
             const childIsActive = activeTerminalPaths.includes(child.path);
             return (
               <button
@@ -80,8 +91,8 @@ function SubDirItem({
                 }}
                 disabled={disabled}
               >
-                <span className="repo-icon">{'\uD83D\uDCC2'}</span>
-                {child.name}
+                <span className="repo-icon">{gitIcon(child.type)}</span>
+                <span className="repo-text-truncate">{child.name}</span>
               </button>
             );
           })}
@@ -129,25 +140,23 @@ export function RepoItem({
   activeTerminalPaths,
 }: RepoItemProps) {
   const [expanded, setExpanded] = useState(false);
-  const [subdirs, setSubdirs] = useState<SubDirectory[]>([]);
+  const [subdirs, setSubdirs] = useState<SubDirectory[] | null>(null);
   const [exists, setExists] = useState(true);
+  const [gitType, setGitType] = useState<DirType>('dir');
 
   const git = useGitActions(repoPath);
 
   const repoName = repoPath.split(/[\\/]/).pop() || repoPath;
   const isActive = activeTerminalPaths.includes(repoPath);
 
-  useEffect(() => {
-    window.electronAPI.fs.directoryExists(repoPath).then(setExists);
-  }, [repoPath]);
+  const gitSubdirs = subdirs ? subdirs.filter((s) => s.type !== 'dir') : [];
+  const hasExpandableChildren = subdirs === null || gitSubdirs.length > 0;
 
-  const handleToggle = async () => {
-    if (!expanded) {
-      const dirs = await window.electronAPI.fs.listSubdirectories(repoPath);
-      setSubdirs(dirs);
-    }
-    setExpanded(!expanded);
-  };
+  useEffect(() => {
+    window.electronAPI.fs.directoryExists(repoPath).then(setExists).catch(() => setExists(false));
+    window.electronAPI.fs.detectGitType(repoPath).then(setGitType).catch(() => {});
+    window.electronAPI.fs.listSubdirectories(repoPath).then(setSubdirs).catch(() => setSubdirs([]));
+  }, [repoPath]);
 
   const handleClick = () => {
     if (!disabled && exists) {
@@ -158,8 +167,7 @@ export function RepoItem({
   if (!exists) {
     return (
       <div className="repo-item repo-item-missing" title="Directory not found">
-        <span className="repo-toggle">{'\u25B6'}</span>
-        <span className="repo-icon">{'\uD83D\uDCC1'}</span>
+        <span className="repo-icon">{ICON_DIR}</span>
         <span className="repo-name">{repoName}</span>
         <span className="repo-warning">{'\u26A0'}</span>
       </div>
@@ -172,26 +180,28 @@ export function RepoItem({
         className={`repo-item${isActive ? ' repo-item-active' : ''}${disabled ? ' repo-item-disabled' : ''}`}
         onContextMenu={(e) => git.handleContextMenu(e)}
       >
-        <button className="repo-toggle" onClick={handleToggle}>
-          {expanded ? '\u25BC' : '\u25B6'}
-        </button>
         <div className="repo-item-content">
           <button
             className="repo-name"
             onClick={handleClick}
             disabled={disabled}
           >
-            <span className="repo-icon">{'\uD83D\uDCC1'}</span>
-            {repoName}
+            <span className="repo-icon">{gitIcon(gitType)}</span>
+            <span className="repo-text-truncate">{repoName}</span>
           </button>
           {git.branch && (
             <div className="repo-branch">{'\u2387'} {git.branch}</div>
           )}
         </div>
+        {hasExpandableChildren && (
+          <button className="repo-toggle" onClick={() => setExpanded(!expanded)}>
+            {expanded ? '\u25BC' : '\u25B6'}
+          </button>
+        )}
       </div>
-      {expanded && subdirs.length > 0 && (
+      {expanded && gitSubdirs.length > 0 && (
         <div className="repo-subdirs">
-          {subdirs.map((sub) => (
+          {gitSubdirs.map((sub) => (
             <SubDirItem
               key={sub.path}
               sub={sub}

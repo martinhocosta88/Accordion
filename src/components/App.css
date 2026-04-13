@@ -171,10 +171,12 @@ body {
 .side-pane-list {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 0 8px;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 
 .side-pane-empty {
@@ -245,6 +247,8 @@ body {
 /* === Repo Item === */
 .repo-item-container {
   margin-bottom: 2px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .repo-item {
@@ -256,6 +260,8 @@ body {
   border-radius: 8px;
   font-size: 13px;
   color: var(--text-secondary);
+  min-width: 0;
+  overflow: hidden;
 }
 
 .repo-item-content {
@@ -310,6 +316,7 @@ body {
   padding: 0;
   width: 100%;
   font-family: inherit;
+  min-width: 0;
 }
 
 .repo-name:hover:not(:disabled) {
@@ -318,6 +325,13 @@ body {
 
 .repo-name:disabled {
   cursor: not-allowed;
+}
+
+.repo-text-truncate {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .repo-warning {
@@ -336,15 +350,19 @@ body {
 }
 
 .repo-subdirs {
-  padding: 4px 0 4px 24px;
+  padding: 4px 0 4px 12px;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .repo-subdir-container {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .repo-subdir {
@@ -360,6 +378,8 @@ body {
   text-align: left;
   font-family: inherit;
   transition: background 0.2s;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .repo-subdir-content {
@@ -380,6 +400,7 @@ body {
   font-family: inherit;
   flex: 1;
   padding: 0;
+  min-width: 0;
 }
 
 .repo-subdir-name:hover:not(:disabled) {
@@ -405,6 +426,7 @@ body {
   align-items: center;
   gap: 6px;
   transition: background 0.2s;
+  min-width: 0;
 }
 
 .repo-subdir-leaf:hover:not(:disabled) {
@@ -518,6 +540,12 @@ body {
 .terminal-btn:hover {
   color: var(--text-secondary);
   background: var(--border);
+}
+
+.diff-count {
+  font-size: 10px;
+  color: var(--accent);
+  margin-left: 2px;
 }
 
 .terminal-btn-close:hover {
@@ -749,6 +777,20 @@ body {
   text-align: left;
   cursor: pointer;
   border-radius: 4px;
+}
+
+.context-menu-icon {
+  font-size: 11px;
+  width: 18px;
+  display: inline-block;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.context-menu-separator {
+  height: 1px;
+  background: var(--border);
+  margin: 3px 8px;
 }
 
 .context-menu-item:hover:not(:disabled) {

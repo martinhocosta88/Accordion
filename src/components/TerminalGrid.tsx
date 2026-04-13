@@ -73,6 +73,7 @@ export function TerminalGrid({
         >
           <TerminalPanel
             ptyId={t.ptyId}
+            cwd={t.cwd}
             label={t.label}
             branch={t.branch}
             theme={theme}

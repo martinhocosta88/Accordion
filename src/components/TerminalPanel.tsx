@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
@@ -6,8 +6,11 @@ import { getXtermTheme } from '../lib/themes';
 import { usePtyData } from '../hooks/usePtyData';
 import type { ThemeName } from '../types';
 
+const DIFF_COUNT_INTERVAL = 15_000;
+
 interface TerminalPanelProps {
   ptyId: string;
+  cwd: string;
   label: string;
   branch: string | null;
   theme: ThemeName;
@@ -21,6 +24,7 @@ interface TerminalPanelProps {
 
 export function TerminalPanel({
   ptyId,
+  cwd,
   label,
   branch,
   theme,
@@ -34,12 +38,32 @@ export function TerminalPanel({
   const containerRef = useRef<HTMLDivElement>(null);
   const terminalRef = useRef<Terminal | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
+  const [changedFiles, setChangedFiles] = useState(0);
+
+  // Poll changed file count
+  useEffect(() => {
+    const refresh = () => {
+      window.electronAPI.git.changedFileCount(cwd).then(setChangedFiles).catch(() => {});
+    };
+    refresh();
+    const interval = setInterval(refresh, DIFF_COUNT_INTERVAL);
+    const onGitChanged = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (cwd.toLowerCase().startsWith(detail.path.toLowerCase())) {
+        refresh();
+      }
+    };
+    window.addEventListener('git-changed', onGitChanged);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('git-changed', onGitChanged);
+    };
+  }, [cwd]);
 
   // Centralized data dispatch — one global listener, not one per terminal
   usePtyData(ptyId, (data) => {
     if (terminalRef.current) {
       terminalRef.current.write(data);
-      terminalRef.current.scrollToBottom();
     }
   });
 
@@ -91,7 +115,9 @@ export function TerminalPanel({
     if (!containerRef.current) return;
 
     let disposed = false;
+    let rafPending = false;
     const refit = () => {
+      rafPending = false;
       if (disposed) return;
       if (fitAddonRef.current && terminalRef.current && containerRef.current) {
         const { clientWidth, clientHeight } = containerRef.current;
@@ -103,7 +129,10 @@ export function TerminalPanel({
     };
 
     const observer = new ResizeObserver(() => {
-      requestAnimationFrame(refit);
+      if (!rafPending) {
+        rafPending = true;
+        requestAnimationFrame(refit);
+      }
     });
     observer.observe(containerRef.current);
 
@@ -127,6 +156,9 @@ export function TerminalPanel({
             title="Show diff"
           >
             {'\u0394'}
+            {changedFiles > 0 && (
+              <span className="diff-count">{changedFiles}</span>
+            )}
           </button>
           <button
             className="terminal-btn"

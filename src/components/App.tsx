@@ -29,6 +29,8 @@ export default function App() {
       if (cfg.repos.length === 0) {
         setShowSettings(true);
       }
+    }).catch(() => {
+      setShowSettings(true);
     });
   }, []);
 

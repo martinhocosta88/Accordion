@@ -76,29 +76,46 @@ describe('config-manager', () => {
 
   describe('addRepo', () => {
     it('adds a new repo path', () => {
-      const config = addRepo(configPath, 'C:\\Repos\\new');
-      expect(config.repos).toEqual(['C:\\Repos\\new']);
+      const repoDir = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-'));
+      const config = addRepo(configPath, repoDir);
+      expect(config.repos).toEqual([repoDir]);
+      fs.rmSync(repoDir, { recursive: true, force: true });
     });
 
     it('does not add a duplicate repo path', () => {
-      addRepo(configPath, 'C:\\Repos\\new');
-      const config = addRepo(configPath, 'C:\\Repos\\new');
-      expect(config.repos).toEqual(['C:\\Repos\\new']);
+      const repoDir = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-'));
+      addRepo(configPath, repoDir);
+      const config = addRepo(configPath, repoDir);
+      expect(config.repos).toEqual([repoDir]);
+      fs.rmSync(repoDir, { recursive: true, force: true });
     });
 
     it('preserves existing repos when adding', () => {
-      addRepo(configPath, 'C:\\Repos\\a');
-      const config = addRepo(configPath, 'C:\\Repos\\b');
-      expect(config.repos).toEqual(['C:\\Repos\\a', 'C:\\Repos\\b']);
+      const repoDirA = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-a-'));
+      const repoDirB = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-b-'));
+      addRepo(configPath, repoDirA);
+      const config = addRepo(configPath, repoDirB);
+      expect(config.repos).toEqual([repoDirA, repoDirB]);
+      fs.rmSync(repoDirA, { recursive: true, force: true });
+      fs.rmSync(repoDirB, { recursive: true, force: true });
+    });
+
+    it('rejects a path that does not exist', () => {
+      const config = addRepo(configPath, 'C:\\Repos\\nonexistent-fake-path');
+      expect(config.repos).toEqual([]);
     });
   });
 
   describe('removeRepo', () => {
     it('removes a repo path', () => {
-      addRepo(configPath, 'C:\\Repos\\a');
-      addRepo(configPath, 'C:\\Repos\\b');
-      const config = removeRepo(configPath, 'C:\\Repos\\a');
-      expect(config.repos).toEqual(['C:\\Repos\\b']);
+      const repoDirA = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-a-'));
+      const repoDirB = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-b-'));
+      addRepo(configPath, repoDirA);
+      addRepo(configPath, repoDirB);
+      const config = removeRepo(configPath, repoDirA);
+      expect(config.repos).toEqual([repoDirB]);
+      fs.rmSync(repoDirA, { recursive: true, force: true });
+      fs.rmSync(repoDirB, { recursive: true, force: true });
     });
 
     it('handles removing a path that does not exist', () => {
@@ -114,10 +131,12 @@ describe('config-manager', () => {
     });
 
     it('preserves repos when setting theme', () => {
-      addRepo(configPath, 'C:\\Repos\\a');
+      const repoDir = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-'));
+      addRepo(configPath, repoDir);
       const config = setTheme(configPath, 'light');
-      expect(config.repos).toEqual(['C:\\Repos\\a']);
+      expect(config.repos).toEqual([repoDir]);
       expect(config.theme).toBe('light');
+      fs.rmSync(repoDir, { recursive: true, force: true });
     });
   });
 });

@@ -11,15 +11,21 @@ const api: ElectronAPI = {
   dialog: {
     selectDirectory: () => ipcRenderer.invoke('dialog:select-directory'),
   },
+  shell: {
+    openPath: (dirPath: string) => ipcRenderer.invoke('shell:open-path', dirPath),
+  },
   fs: {
     listSubdirectories: (dirPath: string) =>
       ipcRenderer.invoke('fs:list-subdirectories', dirPath),
+    detectGitType: (dirPath: string) =>
+      ipcRenderer.invoke('fs:detect-git-type', dirPath),
     directoryExists: (dirPath: string) =>
       ipcRenderer.invoke('fs:directory-exists', dirPath),
   },
   git: {
     getBranch: (dirPath: string) => ipcRenderer.invoke('git:get-branch', dirPath),
     getDiff: (dirPath: string) => ipcRenderer.invoke('git:get-diff', dirPath),
+    changedFileCount: (dirPath: string) => ipcRenderer.invoke('git:changed-file-count', dirPath),
     fetch: (dirPath: string) => ipcRenderer.invoke('git:fetch', dirPath),
     listBranches: (dirPath: string) => ipcRenderer.invoke('git:list-branches', dirPath),
     checkout: (dirPath: string, branch: string) => ipcRenderer.invoke('git:checkout', dirPath, branch),
@@ -31,6 +37,7 @@ const api: ElectronAPI = {
     resize: (id: string, cols: number, rows: number) =>
       ipcRenderer.send('pty:resize', id, cols, rows),
     close: (id: string) => ipcRenderer.send('pty:close', id),
+    has: (id: string): Promise<boolean> => ipcRenderer.invoke('pty:has', id),
     onData: (callback: (id: string, data: string) => void) => {
       const handler = (
         _event: Electron.IpcRendererEvent,

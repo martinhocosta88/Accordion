@@ -19,6 +19,7 @@ export function useTerminals() {
   const addingRef = useRef(false);
   const terminalsRef = useRef(terminals);
   terminalsRef.current = terminals;
+  const autoTypeTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
 
   // Listen for pty exit events (shell process died)
   useEffect(() => {
@@ -61,7 +62,11 @@ export function useTerminals() {
           return [...prev, { id, ptyId, cwd, label, branch, createdAt: Date.now() }];
         });
         setFocusedId(id);
-        setTimeout(() => window.electronAPI.pty.write(ptyId, 'claude\r'), 500);
+        const timer = setTimeout(() => {
+          autoTypeTimers.current.delete(ptyId);
+          window.electronAPI.pty.write(ptyId, 'claude\r');
+        }, 500);
+        autoTypeTimers.current.set(ptyId, timer);
       } catch (err) {
         console.error('Failed to spawn terminal:', err);
       } finally {
@@ -72,14 +77,17 @@ export function useTerminals() {
   );
 
   const closeTerminal = useCallback((id: string) => {
-    setTerminals((prev) => {
-      const terminal = prev.find((t) => t.id === id);
-      if (terminal) {
-        window.electronAPI.pty.close(terminal.ptyId);
-        return prev.filter((t) => t.id !== id);
+    const terminal = terminalsRef.current.find((t) => t.id === id);
+    if (terminal) {
+      // Clear any pending auto-type timer
+      const timer = autoTypeTimers.current.get(terminal.ptyId);
+      if (timer) {
+        clearTimeout(timer);
+        autoTypeTimers.current.delete(terminal.ptyId);
       }
-      return prev;
-    });
+      window.electronAPI.pty.close(terminal.ptyId);
+    }
+    setTerminals((prev) => prev.filter((t) => t.id !== id));
     setMaximizedId((prev) => (prev === id ? null : prev));
   }, []);
 

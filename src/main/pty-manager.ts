@@ -1,17 +1,34 @@
 import * as pty from 'node-pty';
+import * as crypto from 'crypto';
 import { BrowserWindow } from 'electron';
 
 const processes = new Map<string, pty.IPty>();
-let nextId = 1;
+
+const DANGEROUS_ENV_KEYS = new Set([
+  'ELECTRON_RUN_AS_NODE',
+  'ELECTRON_NO_ASAR',
+  'NODE_OPTIONS',
+  'NODE_REPL_EXTERNAL_MODULE',
+]);
+
+function getSafeEnv(): Record<string, string> {
+  const env: Record<string, string> = {};
+  for (const [key, value] of Object.entries(process.env)) {
+    if (value !== undefined && !DANGEROUS_ENV_KEYS.has(key)) {
+      env[key] = value;
+    }
+  }
+  return env;
+}
 
 export function createPty(cwd: string, window: BrowserWindow): string {
   const shell = process.env.COMSPEC || 'cmd.exe';
-  const id = `terminal-${nextId++}`;
+  const id = crypto.randomUUID();
 
   const ptyProcess = pty.spawn(shell, [], {
     name: 'xterm-256color',
     cwd,
-    env: process.env as Record<string, string>,
+    env: getSafeEnv(),
   });
 
   ptyProcess.onData((data) => {
@@ -49,6 +66,10 @@ export function closePty(id: string): void {
     p.kill();
     processes.delete(id);
   }
+}
+
+export function hasPty(id: string): boolean {
+  return processes.has(id);
 }
 
 export function closeAllPtys(): void {
