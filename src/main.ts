@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog } from 'electron';
+import { app, BrowserWindow, Menu, ipcMain, dialog } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import { execFile } from 'child_process';
@@ -26,7 +26,7 @@ function createWindow() {
     minWidth: 800,
     minHeight: 600,
     title: 'Accordion',
-    icon: path.join(__dirname, '../assets/icon.png'),
+    icon: path.join(__dirname, '../../assets/icon.png'),
     backgroundColor: '#1a1a2e',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -34,6 +34,8 @@ function createWindow() {
       contextIsolation: true,
     },
   });
+
+  Menu.setApplicationMenu(null);
 
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);

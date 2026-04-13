@@ -43,8 +43,14 @@ export interface ElectronAPI {
   };
 }
 
+export interface ZoomAPI {
+  getZoom(): number;
+  setZoom(factor: number): void;
+}
+
 declare global {
   interface Window {
     electronAPI: ElectronAPI;
+    zoomAPI: ZoomAPI;
   }
 }

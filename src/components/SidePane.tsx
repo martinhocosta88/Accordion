@@ -1,5 +1,42 @@
+import { useState } from 'react';
 import { RepoItem } from './RepoItem';
 import type { AppConfig } from '../types';
+
+const ZOOM_STEP = 0.1;
+const ZOOM_MIN = 0.5;
+const ZOOM_MAX = 2.0;
+
+function ZoomControl() {
+  const [zoom, setZoom] = useState(() => window.zoomAPI.getZoom());
+
+  const applyZoom = (factor: number) => {
+    const clamped = Math.round(Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, factor)) * 100) / 100;
+    window.zoomAPI.setZoom(clamped);
+    setZoom(clamped);
+  };
+
+  return (
+    <div className="zoom-control">
+      <button
+        className="zoom-btn"
+        onClick={() => applyZoom(zoom - ZOOM_STEP)}
+        disabled={zoom <= ZOOM_MIN}
+        title="Zoom out"
+      >
+        {'\u2212'}
+      </button>
+      <span className="zoom-label">{Math.round(zoom * 100)}%</span>
+      <button
+        className="zoom-btn"
+        onClick={() => applyZoom(zoom + ZOOM_STEP)}
+        disabled={zoom >= ZOOM_MAX}
+        title="Zoom in"
+      >
+        +
+      </button>
+    </div>
+  );
+}
 
 interface SidePaneProps {
   config: AppConfig;
@@ -51,6 +88,7 @@ export function SidePane({
               ))
             )}
           </div>
+          <ZoomControl />
           <button className="side-pane-settings" onClick={onOpenSettings}>
             {'\u2699'} Settings
           </button>

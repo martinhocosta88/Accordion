@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer, webFrame } from 'electron';
 import type { ElectronAPI } from './types';
 
 const api: ElectronAPI = {
@@ -54,3 +54,8 @@ const api: ElectronAPI = {
 };
 
 contextBridge.exposeInMainWorld('electronAPI', api);
+
+contextBridge.exposeInMainWorld('zoomAPI', {
+  getZoom: () => webFrame.getZoomFactor(),
+  setZoom: (factor: number) => webFrame.setZoomFactor(factor),
+});
