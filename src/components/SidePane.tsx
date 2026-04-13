@@ -91,10 +91,12 @@ export function SidePane({
               ))
             )}
           </div>
-          <ZoomControl />
-          <button className="side-pane-settings" onClick={onOpenSettings}>
-            {'\u2699'} Settings
-          </button>
+          <div className="side-pane-footer">
+            <ZoomControl />
+            <button className="side-pane-settings" onClick={onOpenSettings} title="Settings">
+              {'\u2699'}
+            </button>
+          </div>
         </>
       )}
       {collapsed && (
