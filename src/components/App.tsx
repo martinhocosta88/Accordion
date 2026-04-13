@@ -62,6 +62,7 @@ export default function App() {
         onOpenSettings={() => setShowSettings(true)}
         canAddTerminal={canAdd}
         activeTerminalPaths={terminals.map((t) => t.cwd)}
+        focusedTerminalPath={terminals.find((t) => t.id === focusedId)?.cwd ?? null}
         collapsed={sideCollapsed}
         onToggleCollapse={() => setSideCollapsed((c) => !c)}
       />

@@ -47,6 +47,7 @@ interface SidePaneProps {
   onOpenSettings: () => void;
   canAddTerminal: boolean;
   activeTerminalPaths: string[];
+  focusedTerminalPath: string | null;
   collapsed: boolean;
   onToggleCollapse: () => void;
 }
@@ -57,6 +58,7 @@ export function SidePane({
   onOpenSettings,
   canAddTerminal,
   activeTerminalPaths,
+  focusedTerminalPath,
   collapsed,
   onToggleCollapse,
 }: SidePaneProps) {
@@ -87,6 +89,7 @@ export function SidePane({
                   onOpenTerminal={onOpenTerminal}
                   disabled={!canAddTerminal}
                   activeTerminalPaths={activeTerminalPaths}
+                  focusedTerminalPath={focusedTerminalPath}
                 />
               ))
             )}

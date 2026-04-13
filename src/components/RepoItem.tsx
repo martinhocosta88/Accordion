@@ -22,6 +22,7 @@ interface SubDirItemProps {
   onOpenTerminal: (cwd: string, label: string) => void;
   disabled: boolean;
   activeTerminalPaths: string[];
+  focusedTerminalPath: string | null;
 }
 
 function SubDirItem({
@@ -31,10 +32,12 @@ function SubDirItem({
   onOpenTerminal,
   disabled,
   activeTerminalPaths,
+  focusedTerminalPath,
 }: SubDirItemProps) {
   const [expanded, setExpanded] = useState(false);
   const [children, setChildren] = useState<SubDirectory[] | null>(null);
   const isActive = activeTerminalPaths.includes(sub.path);
+  const isFocused = focusedTerminalPath === sub.path;
 
   const git = useGitActions(sub.path);
 
@@ -54,7 +57,7 @@ function SubDirItem({
   return (
     <div className="repo-subdir-container">
       <div
-        className={`repo-subdir${isActive ? ' repo-subdir-active' : ''}`}
+        className={`repo-subdir${isActive ? ' repo-subdir-active' : ''}${isFocused ? ' repo-subdir-focused' : ''}`}
         onContextMenu={(e) => git.handleContextMenu(e, true)}
       >
         <div className="repo-subdir-content">
@@ -80,10 +83,11 @@ function SubDirItem({
         <div className="repo-subdirs">
           {gitChildren.map((child) => {
             const childIsActive = activeTerminalPaths.includes(child.path);
+            const childIsFocused = focusedTerminalPath === child.path;
             return (
               <button
                 key={child.path}
-                className={`repo-subdir repo-subdir-leaf${childIsActive ? ' repo-subdir-active' : ''}`}
+                className={`repo-subdir repo-subdir-leaf${childIsActive ? ' repo-subdir-active' : ''}${childIsFocused ? ' repo-subdir-focused' : ''}`}
                 onClick={() => {
                   if (!disabled) {
                     onOpenTerminal(child.path, `${repoName} / ${sub.name} / ${child.name}`);
@@ -131,6 +135,7 @@ interface RepoItemProps {
   onOpenTerminal: (cwd: string, label: string) => void;
   disabled: boolean;
   activeTerminalPaths: string[];
+  focusedTerminalPath: string | null;
 }
 
 export function RepoItem({
@@ -138,6 +143,7 @@ export function RepoItem({
   onOpenTerminal,
   disabled,
   activeTerminalPaths,
+  focusedTerminalPath,
 }: RepoItemProps) {
   const [expanded, setExpanded] = useState(false);
   const [subdirs, setSubdirs] = useState<SubDirectory[] | null>(null);
@@ -148,6 +154,7 @@ export function RepoItem({
 
   const repoName = repoPath.split(/[\\/]/).pop() || repoPath;
   const isActive = activeTerminalPaths.includes(repoPath);
+  const isFocused = focusedTerminalPath === repoPath;
 
   const gitSubdirs = subdirs ? subdirs.filter((s) => s.type !== 'dir') : [];
   const hasExpandableChildren = subdirs === null || gitSubdirs.length > 0;
@@ -177,7 +184,7 @@ export function RepoItem({
   return (
     <div className="repo-item-container">
       <div
-        className={`repo-item${isActive ? ' repo-item-active' : ''}${disabled ? ' repo-item-disabled' : ''}`}
+        className={`repo-item${isActive ? ' repo-item-active' : ''}${isFocused ? ' repo-item-focused' : ''}${disabled ? ' repo-item-disabled' : ''}`}
         onContextMenu={(e) => git.handleContextMenu(e)}
       >
         <div className="repo-item-content">
@@ -210,6 +217,7 @@ export function RepoItem({
               onOpenTerminal={onOpenTerminal}
               disabled={disabled}
               activeTerminalPaths={activeTerminalPaths}
+              focusedTerminalPath={focusedTerminalPath}
             />
           ))}
         </div>

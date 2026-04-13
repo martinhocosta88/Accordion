@@ -278,6 +278,10 @@ body {
   border-left: 3px solid var(--accent);
 }
 
+.repo-item-focused {
+  background: var(--selection);
+}
+
 .repo-item-disabled {
   opacity: 0.5;
 }
@@ -441,6 +445,10 @@ body {
 
 .repo-subdir-active {
   border-left: 2px solid var(--accent);
+}
+
+.repo-subdir-focused {
+  background: var(--selection);
 }
 
 .repo-subdir:disabled,
