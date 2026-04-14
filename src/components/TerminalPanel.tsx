@@ -90,6 +90,17 @@ export function TerminalPanel({
       window.electronAPI.pty.resize(ptyId, terminal.cols, terminal.rows);
     });
 
+    // Handle Ctrl+V paste into terminal via clipboard API
+    terminal.attachCustomKeyEventHandler((e) => {
+      if (e.type === 'keydown' && e.key === 'v' && (e.ctrlKey || e.metaKey) && !e.shiftKey) {
+        navigator.clipboard.readText().then((text) => {
+          if (text) window.electronAPI.pty.write(ptyId, text);
+        }).catch(() => {});
+        return false;
+      }
+      return true;
+    });
+
     const dataDisposable = terminal.onData((data) => {
       window.electronAPI.pty.write(ptyId, data);
     });
