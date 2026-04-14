@@ -36,7 +36,11 @@ function createWindow() {
     },
   });
 
-  Menu.setApplicationMenu(null);
+  // Keep clipboard accelerators (Ctrl+C/V/X/A) working while hiding the menu bar
+  Menu.setApplicationMenu(
+    Menu.buildFromTemplate([{ role: 'editMenu' }])
+  );
+  mainWindow.setMenuBarVisibility(false);
 
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
