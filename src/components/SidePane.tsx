@@ -50,6 +50,7 @@ interface SidePaneProps {
   focusedTerminalPath: string | null;
   collapsed: boolean;
   onToggleCollapse: () => void;
+  onAddRepo: () => void;
 }
 
 export function SidePane({
@@ -61,25 +62,46 @@ export function SidePane({
   focusedTerminalPath,
   collapsed,
   onToggleCollapse,
+  onAddRepo,
 }: SidePaneProps) {
   return (
     <div className={`side-pane${collapsed ? ' side-pane-collapsed' : ''}`}>
       <div className="side-pane-header">
         {!collapsed && <span>Repositories</span>}
-        <button
-          className="side-pane-toggle"
-          onClick={onToggleCollapse}
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {collapsed ? '\u25B6' : '\u25C0'}
-        </button>
+        {!collapsed && (
+          <div className="side-pane-header-actions">
+            <button
+              className="side-pane-add"
+              onClick={onAddRepo}
+              title="Add repository"
+            >
+              +
+            </button>
+            <button
+              className="side-pane-toggle"
+              onClick={onToggleCollapse}
+              title="Collapse sidebar"
+            >
+              {'\u25C0'}
+            </button>
+          </div>
+        )}
+        {collapsed && (
+          <button
+            className="side-pane-toggle"
+            onClick={onToggleCollapse}
+            title="Expand sidebar"
+          >
+            {'\u25B6'}
+          </button>
+        )}
       </div>
       {!collapsed && (
         <>
           <div className="side-pane-list">
             {config.repos.length === 0 ? (
               <div className="side-pane-empty">
-                No repositories configured. Click Settings to add one.
+                No repositories configured. Click + to add one.
               </div>
             ) : (
               config.repos.map((repoPath) => (

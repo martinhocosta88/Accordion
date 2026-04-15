@@ -21,16 +21,12 @@ export default function App() {
     canAdd,
   } = useTerminals();
 
-  // Load config on mount; auto-open settings if no repos configured
+  // Load config on mount
   useEffect(() => {
     window.electronAPI.config.get().then((cfg) => {
       setConfig(cfg);
       document.documentElement.setAttribute('data-theme', cfg.theme);
-      if (cfg.repos.length === 0) {
-        setShowSettings(true);
-      }
     }).catch(() => {
-      setShowSettings(true);
     });
   }, []);
 
@@ -41,6 +37,14 @@ export default function App() {
   const handleConfigChange = (newConfig: AppConfig) => {
     setConfig(newConfig);
     document.documentElement.setAttribute('data-theme', newConfig.theme);
+  };
+
+  const handleAddRepo = async () => {
+    const selectedPath = await window.electronAPI.dialog.selectDirectory();
+    if (selectedPath) {
+      const newConfig = await window.electronAPI.config.addRepo(selectedPath);
+      handleConfigChange(newConfig);
+    }
   };
 
   // Toggle diff: clicking the same terminal closes it, clicking a different one switches
@@ -65,6 +69,7 @@ export default function App() {
         focusedTerminalPath={terminals.find((t) => t.id === focusedId)?.cwd ?? null}
         collapsed={sideCollapsed}
         onToggleCollapse={() => setSideCollapsed((c) => !c)}
+        onAddRepo={handleAddRepo}
       />
       <TerminalGrid
         terminals={terminals}
