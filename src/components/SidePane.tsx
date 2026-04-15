@@ -52,6 +52,7 @@ interface SidePaneProps {
   onToggleCollapse: () => void;
   onAddRepo: () => void;
   onReorderRepos: (reordered: string[]) => void;
+  onRemoveRepo: (repoPath: string) => void;
 }
 
 export function SidePane({
@@ -65,6 +66,7 @@ export function SidePane({
   onToggleCollapse,
   onAddRepo,
   onReorderRepos,
+  onRemoveRepo,
 }: SidePaneProps) {
   const dragIndexRef = useRef<number | null>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
@@ -173,6 +175,7 @@ export function SidePane({
                     disabled={!canAddTerminal}
                     activeTerminalPaths={activeTerminalPaths}
                     focusedTerminalPath={focusedTerminalPath}
+                    onRemove={() => onRemoveRepo(repoPath)}
                   />
                 </div>
               ))

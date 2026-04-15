@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { ContextMenu } from './ContextMenu';
+import type { MenuItem } from './ContextMenu';
 import { BranchPicker } from './BranchPicker';
 import { ConfirmDialog } from './ConfirmDialog';
 import { useGitActions } from '../hooks/useGitActions';
@@ -136,6 +137,7 @@ interface RepoItemProps {
   disabled: boolean;
   activeTerminalPaths: string[];
   focusedTerminalPath: string | null;
+  onRemove?: () => void;
 }
 
 export function RepoItem({
@@ -144,6 +146,7 @@ export function RepoItem({
   disabled,
   activeTerminalPaths,
   focusedTerminalPath,
+  onRemove,
 }: RepoItemProps) {
   const [expanded, setExpanded] = useState(false);
   const [subdirs, setSubdirs] = useState<SubDirectory[] | null>(null);
@@ -151,6 +154,19 @@ export function RepoItem({
   const [gitType, setGitType] = useState<DirType>('dir');
 
   const git = useGitActions(repoPath);
+
+  const menuItems = useMemo((): MenuItem[] => {
+    const items = [...git.contextMenuItems];
+    if (onRemove) {
+      items.push({
+        label: 'Remove from List',
+        icon: '\u2715',
+        separator: true,
+        onClick: onRemove,
+      });
+    }
+    return items;
+  }, [git.contextMenuItems, onRemove]);
 
   const repoName = repoPath.split(/[\\/]/).pop() || repoPath;
   const isActive = activeTerminalPaths.includes(repoPath);
@@ -226,7 +242,7 @@ export function RepoItem({
         <ContextMenu
           x={git.contextMenu.x}
           y={git.contextMenu.y}
-          items={git.contextMenuItems}
+          items={menuItems}
           onClose={() => git.setContextMenu(null)}
         />
       )}
