@@ -160,6 +160,30 @@ body {
   color: var(--accent);
 }
 
+.repo-drag-wrapper {
+  position: relative;
+}
+
+.repo-drag-wrapper[draggable] {
+  cursor: grab;
+}
+
+.repo-drag-wrapper[draggable]:active {
+  cursor: grabbing;
+}
+
+.repo-drag-over::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 4px;
+  right: 4px;
+  height: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+  z-index: 10;
+}
+
 .side-pane-toggle {
   background: none;
   border: none;

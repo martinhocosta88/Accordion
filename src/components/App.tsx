@@ -47,6 +47,11 @@ export default function App() {
     }
   };
 
+  const handleReorderRepos = async (reordered: string[]) => {
+    const newConfig = await window.electronAPI.config.reorderRepos(reordered);
+    handleConfigChange(newConfig);
+  };
+
   // Toggle diff: clicking the same terminal closes it, clicking a different one switches
   const handleShowDiff = (terminalId: string) => {
     setDiffTerminalId((prev) => (prev === terminalId ? null : terminalId));
@@ -70,6 +75,7 @@ export default function App() {
         collapsed={sideCollapsed}
         onToggleCollapse={() => setSideCollapsed((c) => !c)}
         onAddRepo={handleAddRepo}
+        onReorderRepos={handleReorderRepos}
       />
       <TerminalGrid
         terminals={terminals}

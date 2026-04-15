@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { RepoItem } from './RepoItem';
 import type { AppConfig } from '../types';
 
@@ -51,6 +51,7 @@ interface SidePaneProps {
   collapsed: boolean;
   onToggleCollapse: () => void;
   onAddRepo: () => void;
+  onReorderRepos: (reordered: string[]) => void;
 }
 
 export function SidePane({
@@ -63,7 +64,51 @@ export function SidePane({
   collapsed,
   onToggleCollapse,
   onAddRepo,
+  onReorderRepos,
 }: SidePaneProps) {
+  const dragIndexRef = useRef<number | null>(null);
+  const [dropIndex, setDropIndex] = useState<number | null>(null);
+
+  const handleDragStart = (index: number) => (e: React.DragEvent) => {
+    dragIndexRef.current = index;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(index));
+    (e.currentTarget as HTMLElement).style.opacity = '0.4';
+  };
+
+  const handleDragEnd = (e: React.DragEvent) => {
+    (e.currentTarget as HTMLElement).style.opacity = '1';
+    dragIndexRef.current = null;
+    setDropIndex(null);
+  };
+
+  const handleDragOver = (index: number) => (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (dragIndexRef.current !== null && dragIndexRef.current !== index) {
+      setDropIndex(index);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDropIndex(null);
+  };
+
+  const handleDrop = (targetIndex: number) => (e: React.DragEvent) => {
+    e.preventDefault();
+    const fromIndex = dragIndexRef.current;
+    if (fromIndex === null || fromIndex === targetIndex) {
+      setDropIndex(null);
+      return;
+    }
+    const reordered = [...config.repos];
+    const [moved] = reordered.splice(fromIndex, 1);
+    reordered.splice(targetIndex, 0, moved);
+    onReorderRepos(reordered);
+    dragIndexRef.current = null;
+    setDropIndex(null);
+  };
+
   return (
     <div className={`side-pane${collapsed ? ' side-pane-collapsed' : ''}`}>
       <div className="side-pane-header">
@@ -104,15 +149,25 @@ export function SidePane({
                 No repositories configured. Click + to add one.
               </div>
             ) : (
-              config.repos.map((repoPath) => (
-                <RepoItem
+              config.repos.map((repoPath, index) => (
+                <div
                   key={repoPath}
-                  repoPath={repoPath}
-                  onOpenTerminal={onOpenTerminal}
-                  disabled={!canAddTerminal}
-                  activeTerminalPaths={activeTerminalPaths}
-                  focusedTerminalPath={focusedTerminalPath}
-                />
+                  draggable
+                  onDragStart={handleDragStart(index)}
+                  onDragEnd={handleDragEnd}
+                  onDragOver={handleDragOver(index)}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop(index)}
+                  className={`repo-drag-wrapper${dropIndex === index ? ' repo-drag-over' : ''}`}
+                >
+                  <RepoItem
+                    repoPath={repoPath}
+                    onOpenTerminal={onOpenTerminal}
+                    disabled={!canAddTerminal}
+                    activeTerminalPaths={activeTerminalPaths}
+                    focusedTerminalPath={focusedTerminalPath}
+                  />
+                </div>
               ))
             )}
           </div>
