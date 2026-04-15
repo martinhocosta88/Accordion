@@ -20,6 +20,12 @@ interface TerminalPanelProps {
   onToggleMaximize: () => void;
   onFocus: () => void;
   onShowDiff: () => void;
+  terminalId: string;
+  onDragStart: (id: string) => void;
+  onDragEnd: () => void;
+  onDrop: (targetId: string) => void;
+  dragOverId: string | null;
+  dragDisabled: boolean;
 }
 
 export function TerminalPanel({
@@ -34,6 +40,12 @@ export function TerminalPanel({
   onToggleMaximize,
   onFocus,
   onShowDiff,
+  terminalId,
+  onDragStart,
+  onDragEnd,
+  onDrop: onDropTerminal,
+  dragOverId,
+  dragDisabled,
 }: TerminalPanelProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const terminalRef = useRef<Terminal | null>(null);
@@ -155,7 +167,25 @@ export function TerminalPanel({
 
   return (
     <div className={`terminal-panel${isFocused ? ' terminal-panel-focused' : ''}`} onMouseDown={onFocus}>
-      <div className={`terminal-header${isFocused ? ' terminal-header-focused' : ''}`}>
+      <div
+        className={`terminal-header${isFocused ? ' terminal-header-focused' : ''}${dragOverId === terminalId ? ' terminal-header-drop-target' : ''}`}
+        draggable={!dragDisabled}
+        onDragStart={(e) => {
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', terminalId);
+          onDragStart(terminalId);
+        }}
+        onDragEnd={onDragEnd}
+        onDragOver={(e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          onDropTerminal(terminalId);
+        }}
+        style={{ cursor: dragDisabled ? undefined : 'grab' }}
+      >
         <span className="terminal-label">
           {label}
           {branch && <span className="terminal-branch">{'\u2387'} {branch}</span>}

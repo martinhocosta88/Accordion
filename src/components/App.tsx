@@ -18,6 +18,7 @@ export default function App() {
     closeTerminal,
     toggleMaximize,
     focusTerminal,
+    swapTerminals,
     canAdd,
   } = useTerminals();
 
@@ -88,6 +89,7 @@ export default function App() {
         onShowDiff={handleShowDiff}
         onCloseDiff={() => setDiffTerminalId(null)}
         theme={config.theme}
+        onSwapTerminals={swapTerminals}
       />
       {showSettings && (
         <SettingsDialog

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { TerminalPanel } from './TerminalPanel';
 import { DiffPanel } from './DiffPanel';
 import { computeGridLayout } from '../lib/grid-layout';
@@ -16,6 +16,7 @@ interface TerminalGridProps {
   onShowDiff: (terminalId: string) => void;
   onCloseDiff: () => void;
   theme: ThemeName;
+  onSwapTerminals: (idA: string, idB: string) => void;
 }
 
 export function TerminalGrid({
@@ -29,10 +30,33 @@ export function TerminalGrid({
   onShowDiff,
   onCloseDiff,
   theme,
+  onSwapTerminals,
 }: TerminalGridProps) {
   const diffTerminal = diffTerminalId
     ? terminals.find((t) => t.id === diffTerminalId)
     : null;
+
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
+
+  const handleDragStart = (id: string) => {
+    setDragId(id);
+  };
+
+  const handleDragEnd = () => {
+    setDragId(null);
+    setDragOverId(null);
+  };
+
+  const handleDrop = (targetId: string) => {
+    if (dragId && dragId !== targetId) {
+      onSwapTerminals(dragId, targetId);
+    }
+    setDragId(null);
+    setDragOverId(null);
+  };
+
+  const dragDisabled = !!maximizedId || !!diffTerminalId;
 
   const gridStyle = useMemo((): React.CSSProperties => {
     if (diffTerminalId) {
@@ -69,7 +93,12 @@ export function TerminalGrid({
       {terminals.map((t) => (
         <div
           key={t.id}
-          className={isVisible(t.id) ? 'terminal-cell' : 'terminal-cell-hidden'}
+          className={isVisible(t.id) ? `terminal-cell${dragId === t.id ? ' terminal-cell-dragging' : ''}` : 'terminal-cell-hidden'}
+          onDragOver={(e) => {
+            e.preventDefault();
+            if (dragId && dragId !== t.id) setDragOverId(t.id);
+          }}
+          onDragLeave={() => setDragOverId(null)}
         >
           <TerminalPanel
             ptyId={t.ptyId}
@@ -83,6 +112,12 @@ export function TerminalGrid({
             onToggleMaximize={() => onToggleMaximize(t.id)}
             onFocus={() => onFocus(t.id)}
             onShowDiff={() => onShowDiff(t.id)}
+            terminalId={t.id}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            onDrop={handleDrop}
+            dragOverId={dragOverId}
+            dragDisabled={dragDisabled}
           />
         </div>
       ))}

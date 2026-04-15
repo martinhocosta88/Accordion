@@ -535,6 +535,23 @@ body {
   display: none;
 }
 
+.terminal-cell-dragging {
+  opacity: 0.4;
+}
+
+.terminal-header-drop-target {
+  outline: 2px dashed var(--accent);
+  outline-offset: -2px;
+}
+
+.terminal-header[draggable] {
+  cursor: grab;
+}
+
+.terminal-header[draggable]:active {
+  cursor: grabbing;
+}
+
 /* === Terminal Panel === */
 .terminal-panel {
   flex: 1;

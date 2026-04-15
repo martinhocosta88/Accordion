@@ -99,6 +99,17 @@ export function useTerminals() {
     setFocusedId(id);
   }, []);
 
+  const swapTerminals = useCallback((idA: string, idB: string) => {
+    setTerminals((prev) => {
+      const indexA = prev.findIndex((t) => t.id === idA);
+      const indexB = prev.findIndex((t) => t.id === idB);
+      if (indexA === -1 || indexB === -1 || indexA === indexB) return prev;
+      const next = [...prev];
+      [next[indexA], next[indexB]] = [next[indexB], next[indexA]];
+      return next;
+    });
+  }, []);
+
   return {
     terminals,
     maximizedId,
@@ -107,6 +118,7 @@ export function useTerminals() {
     closeTerminal,
     toggleMaximize,
     focusTerminal,
+    swapTerminals,
     canAdd: terminals.length < MAX_TERMINALS,
   };
 }
