@@ -108,7 +108,8 @@ export function SidePane({
     }
     const reordered = [...config.repos];
     const [moved] = reordered.splice(fromIndex, 1);
-    reordered.splice(targetIndex, 0, moved);
+    const insertAt = fromIndex < targetIndex ? targetIndex - 1 : targetIndex;
+    reordered.splice(insertAt, 0, moved);
     onReorderRepos(reordered);
     dragIndexRef.current = null;
     setDraggingIndex(null);
