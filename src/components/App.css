@@ -544,14 +544,6 @@ body {
   outline-offset: -2px;
 }
 
-.terminal-header[draggable] {
-  cursor: grab;
-}
-
-.terminal-header[draggable]:active {
-  cursor: grabbing;
-}
-
 /* === Terminal Panel === */
 .terminal-panel {
   flex: 1;

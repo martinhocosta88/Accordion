@@ -98,7 +98,15 @@ export function TerminalGrid({
             e.preventDefault();
             if (dragId && dragId !== t.id) setDragOverId(t.id);
           }}
-          onDragLeave={() => setDragOverId(null)}
+          onDragLeave={(e) => {
+            if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+              setDragOverId(null);
+            }
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            handleDrop(t.id);
+          }}
         >
           <TerminalPanel
             ptyId={t.ptyId}
@@ -115,7 +123,6 @@ export function TerminalGrid({
             terminalId={t.id}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
-            onDrop={handleDrop}
             dragOverId={dragOverId}
             dragDisabled={dragDisabled}
           />

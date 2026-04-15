@@ -23,7 +23,6 @@ interface TerminalPanelProps {
   terminalId: string;
   onDragStart: (id: string) => void;
   onDragEnd: () => void;
-  onDrop: (targetId: string) => void;
   dragOverId: string | null;
   dragDisabled: boolean;
 }
@@ -43,7 +42,6 @@ export function TerminalPanel({
   terminalId,
   onDragStart,
   onDragEnd,
-  onDrop: onDropTerminal,
   dragOverId,
   dragDisabled,
 }: TerminalPanelProps) {
@@ -176,14 +174,6 @@ export function TerminalPanel({
           onDragStart(terminalId);
         }}
         onDragEnd={onDragEnd}
-        onDragOver={(e) => {
-          e.preventDefault();
-          e.dataTransfer.dropEffect = 'move';
-        }}
-        onDrop={(e) => {
-          e.preventDefault();
-          onDropTerminal(terminalId);
-        }}
         style={{ cursor: dragDisabled ? undefined : 'grab' }}
       >
         <span className="terminal-label">
