@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { TerminalPanel } from './TerminalPanel';
 import { DiffPanel } from './DiffPanel';
 import { computeGridLayout } from '../lib/grid-layout';
@@ -57,6 +57,42 @@ export function TerminalGrid({
   };
 
   const dragDisabled = !!maximizedId || !!diffTerminalId;
+
+  // Alt+Arrow keyboard navigation between terminals
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!e.altKey || terminals.length <= 1 || !focusedId) return;
+      const { key } = e;
+      if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(key)) return;
+
+      e.preventDefault();
+      const currentIndex = terminals.findIndex((t) => t.id === focusedId);
+      if (currentIndex === -1) return;
+
+      const layout = computeGridLayout(terminals.length);
+      const cols = layout.row1Count || 1;
+      let nextIndex = currentIndex;
+
+      if (key === 'ArrowLeft') {
+        nextIndex = currentIndex > 0 ? currentIndex - 1 : terminals.length - 1;
+      } else if (key === 'ArrowRight') {
+        nextIndex = currentIndex < terminals.length - 1 ? currentIndex + 1 : 0;
+      } else if (key === 'ArrowUp') {
+        nextIndex = currentIndex - cols;
+        if (nextIndex < 0) nextIndex = currentIndex;
+      } else if (key === 'ArrowDown') {
+        nextIndex = currentIndex + cols;
+        if (nextIndex >= terminals.length) nextIndex = currentIndex;
+      }
+
+      if (nextIndex !== currentIndex) {
+        onFocus(terminals[nextIndex].id);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [terminals, focusedId, onFocus]);
 
   const gridStyle = useMemo((): React.CSSProperties => {
     if (diffTerminalId) {
