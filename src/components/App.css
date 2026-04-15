@@ -636,6 +636,10 @@ body {
   height: 100%;
 }
 
+.terminal-body .xterm .xterm-viewport {
+  z-index: 1;
+}
+
 .terminal-error {
   padding: 16px;
   color: var(--error);
