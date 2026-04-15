@@ -21,28 +21,6 @@ export function SettingsDialog({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
-  const handleAdd = async () => {
-    const selectedPath = await window.electronAPI.dialog.selectDirectory();
-    if (selectedPath) {
-      const newConfig = await window.electronAPI.config.addRepo(selectedPath);
-      onConfigChange(newConfig);
-    }
-  };
-
-  const handleRemove = async (repoPath: string) => {
-    const newConfig = await window.electronAPI.config.removeRepo(repoPath);
-    onConfigChange(newConfig);
-  };
-
-  const handleMove = async (index: number, direction: -1 | 1) => {
-    const target = index + direction;
-    if (target < 0 || target >= config.repos.length) return;
-    const reordered = [...config.repos];
-    [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
-    const newConfig = await window.electronAPI.config.reorderRepos(reordered);
-    onConfigChange(newConfig);
-  };
-
   const handleThemeChange = async (themeName: string) => {
     const newConfig = await window.electronAPI.config.setTheme(themeName);
     onConfigChange(newConfig);
@@ -82,45 +60,6 @@ export function SettingsDialog({
               );
             })}
           </div>
-          <h3>Repository Paths</h3>
-          <div className="settings-repos">
-            {config.repos.length === 0 ? (
-              <p className="settings-empty">No repositories added yet.</p>
-            ) : (
-              config.repos.map((repo, i) => (
-                <div key={repo} className="settings-repo-item">
-                  <div className="settings-repo-sort">
-                    <button
-                      className="settings-sort-btn"
-                      onClick={() => handleMove(i, -1)}
-                      disabled={i === 0}
-                      title="Move up"
-                    >
-                      {'\u25B2'}
-                    </button>
-                    <button
-                      className="settings-sort-btn"
-                      onClick={() => handleMove(i, 1)}
-                      disabled={i === config.repos.length - 1}
-                      title="Move down"
-                    >
-                      {'\u25BC'}
-                    </button>
-                  </div>
-                  <span className="settings-repo-path">{repo}</span>
-                  <button
-                    className="settings-repo-remove"
-                    onClick={() => handleRemove(repo)}
-                  >
-                    Remove
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-          <button className="settings-add-btn" onClick={handleAdd}>
-            + Add Repository
-          </button>
         </div>
       </div>
     </div>
