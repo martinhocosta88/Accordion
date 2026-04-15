@@ -68,17 +68,18 @@ export function SidePane({
 }: SidePaneProps) {
   const dragIndexRef = useRef<number | null>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
+  const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
 
   const handleDragStart = (index: number) => (e: React.DragEvent) => {
     dragIndexRef.current = index;
+    setDraggingIndex(index);
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', String(index));
-    (e.currentTarget as HTMLElement).style.opacity = '0.4';
   };
 
-  const handleDragEnd = (e: React.DragEvent) => {
-    (e.currentTarget as HTMLElement).style.opacity = '1';
+  const handleDragEnd = () => {
     dragIndexRef.current = null;
+    setDraggingIndex(null);
     setDropIndex(null);
   };
 
@@ -87,11 +88,15 @@ export function SidePane({
     e.dataTransfer.dropEffect = 'move';
     if (dragIndexRef.current !== null && dragIndexRef.current !== index) {
       setDropIndex(index);
+    } else {
+      setDropIndex(null);
     }
   };
 
-  const handleDragLeave = () => {
-    setDropIndex(null);
+  const handleDragLeave = (e: React.DragEvent) => {
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setDropIndex(null);
+    }
   };
 
   const handleDrop = (targetIndex: number) => (e: React.DragEvent) => {
@@ -158,7 +163,7 @@ export function SidePane({
                   onDragOver={handleDragOver(index)}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop(index)}
-                  className={`repo-drag-wrapper${dropIndex === index ? ' repo-drag-over' : ''}`}
+                  className={`repo-drag-wrapper${dropIndex === index ? ' repo-drag-over' : ''}${draggingIndex === index ? ' repo-drag-source' : ''}`}
                 >
                   <RepoItem
                     repoPath={repoPath}

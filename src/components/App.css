@@ -172,6 +172,10 @@ body {
   cursor: grabbing;
 }
 
+.repo-drag-source {
+  opacity: 0.4;
+}
+
 .repo-drag-over::before {
   content: '';
   position: absolute;
