@@ -111,6 +111,7 @@ export function SidePane({
     reordered.splice(targetIndex, 0, moved);
     onReorderRepos(reordered);
     dragIndexRef.current = null;
+    setDraggingIndex(null);
     setDropIndex(null);
   };
 
