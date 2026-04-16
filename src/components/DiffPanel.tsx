@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { ConfirmDialog } from './ConfirmDialog';
 
 interface DiffFile {
   path: string;
@@ -85,6 +86,7 @@ export function DiffPanel({ cwd, label, ptyId, onClose }: DiffPanelProps) {
   const [loading, setLoading] = useState(true);
   const [commentTarget, setCommentTarget] = useState<CommentTarget | null>(null);
   const [commentText, setCommentText] = useState('');
+  const [showRevertConfirm, setShowRevertConfirm] = useState(false);
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
   const textSelectHandledRef = useRef(false);
 
@@ -233,6 +235,13 @@ export function DiffPanel({ cwd, label, ptyId, onClose }: DiffPanelProps) {
           <button className="diff-btn" onClick={refresh} title="Refresh">
             {'\u21BB'}
           </button>
+          <button
+            className="diff-btn diff-btn-revert"
+            onClick={() => setShowRevertConfirm(true)}
+            title="Revert all uncommitted changes"
+          >
+            {'\u27F2'}
+          </button>
           <button className="diff-btn diff-btn-close" onClick={onClose} title="Close">
             {'\u2715'}
           </button>
@@ -351,6 +360,19 @@ export function DiffPanel({ cwd, label, ptyId, onClose }: DiffPanelProps) {
           Finalize Review
         </button>
       </div>
+      {showRevertConfirm && (
+        <ConfirmDialog
+          message="Revert all uncommitted changes? This cannot be undone."
+          confirmLabel="Revert"
+          onConfirm={async () => {
+            await window.electronAPI.git.resetHard(cwd);
+            setShowRevertConfirm(false);
+            window.dispatchEvent(new CustomEvent('git-changed', { detail: { path: cwd } }));
+            refresh();
+          }}
+          onCancel={() => setShowRevertConfirm(false)}
+        />
+      )}
     </div>
   );
 }

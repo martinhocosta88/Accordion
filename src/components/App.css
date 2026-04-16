@@ -1114,6 +1114,10 @@ body {
   color: var(--error);
 }
 
+.diff-btn-revert:hover {
+  color: var(--warning);
+}
+
 .diff-body {
   flex: 1;
   overflow-y: auto;
