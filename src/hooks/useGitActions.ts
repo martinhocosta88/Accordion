@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import type { AheadBehind } from '../types';
 
 const BRANCH_REFRESH_INTERVAL = 30_000; // 30 seconds
 
 export function useGitActions(repoPath: string) {
   const [branch, setBranch] = useState<string | null>(null);
+  const [aheadBehind, setAheadBehind] = useState<AheadBehind | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [showBranchPicker, setShowBranchPicker] = useState(false);
   const [fetching, setFetching] = useState(false);
@@ -13,14 +15,23 @@ export function useGitActions(repoPath: string) {
   const branchRef = useRef(branch);
   branchRef.current = branch;
 
-  // Fetch branch on mount and refresh periodically
+  // Fetch branch + ahead/behind on mount, on interval, and on git-changed events
   useEffect(() => {
     const refresh = () => {
       window.electronAPI.git.getBranch(repoPath).then(setBranch).catch(() => {});
+      window.electronAPI.git.getAheadBehind(repoPath).then(setAheadBehind).catch(() => {});
     };
     refresh();
     const interval = setInterval(refresh, BRANCH_REFRESH_INTERVAL);
-    return () => clearInterval(interval);
+    const onGitChanged = (e: Event) => {
+      const detail = (e as CustomEvent<{ path: string }>).detail;
+      if (detail?.path === repoPath) refresh();
+    };
+    window.addEventListener('git-changed', onGitChanged);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('git-changed', onGitChanged);
+    };
   }, [repoPath]);
 
   const handleContextMenu = useCallback((e: React.MouseEvent, requireBranch = false) => {
@@ -85,6 +96,7 @@ export function useGitActions(repoPath: string) {
 
   return {
     branch,
+    aheadBehind,
     fetching,
     fetchError,
     contextMenu,

@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { execFile } from 'child_process';
 import { readConfig, addRepo, removeRepo, reorderRepos, setTheme } from './main/config-manager';
+import { parseAheadBehind } from './main/git-helpers';
 import {
   createPty,
   writePty,
@@ -166,6 +167,20 @@ ipcMain.handle('git:get-branch', async (_event, dirPath: string) => {
       if (err) return resolve(null);
       resolve(stdout.trim() || null);
     });
+  });
+});
+
+ipcMain.handle('git:get-ahead-behind', async (_event, dirPath: string) => {
+  if (!isPathWithinRepos(dirPath)) return { ahead: 0, behind: 0, hasUpstream: false };
+  return new Promise((resolve) => {
+    execFile(
+      'git',
+      ['rev-list', '--left-right', '--count', 'HEAD...@{upstream}'],
+      { cwd: dirPath },
+      (_err, stdout, stderr) => {
+        resolve(parseAheadBehind(stdout || '', stderr || null));
+      }
+    );
   });
 });
 

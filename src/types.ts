@@ -8,6 +8,12 @@ export interface AppConfig {
 
 export type DirType = 'repo' | 'worktree' | 'dir';
 
+export interface AheadBehind {
+  ahead: number;
+  behind: number;
+  hasUpstream: boolean;
+}
+
 export interface SubDirectory {
   name: string;
   path: string;
@@ -35,6 +41,7 @@ export interface ElectronAPI {
   };
   git: {
     getBranch(dirPath: string): Promise<string | null>;
+    getAheadBehind(dirPath: string): Promise<AheadBehind>;
     getDiff(dirPath: string): Promise<string>;
     changedFileCount(dirPath: string): Promise<number>;
     fetch(dirPath: string): Promise<{ ok: boolean; error?: string }>;

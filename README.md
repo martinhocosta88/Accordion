@@ -12,7 +12,7 @@ Accordion opens a terminal grid where each pane runs Claude Code in a different 
 
 **Multi-Terminal Grid** — Open up to 6 terminals in an auto-arranged grid (1-3 per row). Each terminal runs Claude Code automatically on launch.
 
-**Repository Browser** — Side pane lists configured repos with git branch names. Repos and worktrees are distinguished with icons (📦 repo, 🔗 worktree), and plain directories are hidden unless added as a top-level path. Navigate two levels deep into subdirectories to open terminals in specific folders.
+**Repository Browser** — Side pane lists configured repos with git branch names and ahead/behind counters (↑N / ↓N) relative to upstream, so you can tell at a glance whether a branch needs a pull or a push. Repos and worktrees are distinguished with icons (📦 repo, 🔗 worktree), and plain directories are hidden unless added as a top-level path. Navigate two levels deep into subdirectories to open terminals in specific folders.
 
 **Active Terminal Highlighting** — Repos with open terminals show an accent border. The folder matching the currently focused terminal gets a distinct background highlight, so you always know which repo you're working in.
 
@@ -127,7 +127,7 @@ src/
 npm test
 ```
 
-Runs unit tests for the config manager and grid layout calculator via Vitest.
+Runs unit tests for the config manager, grid layout calculator, and git helpers via Vitest.
 
 ## License
 

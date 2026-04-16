@@ -129,7 +129,7 @@ body {
 
 /* === Side Pane === */
 .side-pane {
-  width: 220px;
+  width: 260px;
   background: var(--bg-side);
   border-right: 1px solid var(--border);
   display: flex;
@@ -445,6 +445,22 @@ body {
 .repo-branch-text {
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.repo-ahead {
+  margin-left: 6px;
+  flex-shrink: 0;
+  color: var(--accent-ahead, #7cc47a);
+  font-variant-numeric: tabular-nums;
+  cursor: help;
+}
+
+.repo-behind {
+  margin-left: 4px;
+  flex-shrink: 0;
+  color: var(--accent-behind, #d9a441);
+  font-variant-numeric: tabular-nums;
+  cursor: help;
 }
 
 .repo-fetch-status {

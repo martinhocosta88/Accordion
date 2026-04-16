@@ -73,6 +73,16 @@ function SubDirItem({
           {git.branch && (
             <div className="repo-branch">
               <span className="repo-branch-text">{'\u2387'} {git.branch}</span>
+              {git.aheadBehind?.hasUpstream && git.aheadBehind.ahead > 0 && (
+                <span className="repo-ahead" title={`${git.aheadBehind.ahead} ahead of upstream`}>
+                  {'\u2191'}{git.aheadBehind.ahead}
+                </span>
+              )}
+              {git.aheadBehind?.hasUpstream && git.aheadBehind.behind > 0 && (
+                <span className="repo-behind" title={`${git.aheadBehind.behind} behind upstream`}>
+                  {'\u2193'}{git.aheadBehind.behind}
+                </span>
+              )}
               {git.fetching && <span className="repo-fetch-status" title="Fetching...">{'\u21BB'}</span>}
               {git.fetchError && <span className="repo-fetch-error" title={git.fetchError}>{'\u26A0'}</span>}
             </div>
@@ -219,6 +229,16 @@ export function RepoItem({
           {git.branch && (
             <div className="repo-branch">
               <span className="repo-branch-text">{'\u2387'} {git.branch}</span>
+              {git.aheadBehind?.hasUpstream && git.aheadBehind.ahead > 0 && (
+                <span className="repo-ahead" title={`${git.aheadBehind.ahead} ahead of upstream`}>
+                  {'\u2191'}{git.aheadBehind.ahead}
+                </span>
+              )}
+              {git.aheadBehind?.hasUpstream && git.aheadBehind.behind > 0 && (
+                <span className="repo-behind" title={`${git.aheadBehind.behind} behind upstream`}>
+                  {'\u2193'}{git.aheadBehind.behind}
+                </span>
+              )}
               {git.fetching && <span className="repo-fetch-status" title="Fetching...">{'\u21BB'}</span>}
               {git.fetchError && <span className="repo-fetch-error" title={git.fetchError}>{'\u26A0'}</span>}
             </div>

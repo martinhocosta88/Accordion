@@ -25,6 +25,7 @@ const api: ElectronAPI = {
   },
   git: {
     getBranch: (dirPath: string) => ipcRenderer.invoke('git:get-branch', dirPath),
+    getAheadBehind: (dirPath: string) => ipcRenderer.invoke('git:get-ahead-behind', dirPath),
     getDiff: (dirPath: string) => ipcRenderer.invoke('git:get-diff', dirPath),
     changedFileCount: (dirPath: string) => ipcRenderer.invoke('git:changed-file-count', dirPath),
     fetch: (dirPath: string): Promise<{ ok: boolean; error?: string }> => ipcRenderer.invoke('git:fetch', dirPath),
