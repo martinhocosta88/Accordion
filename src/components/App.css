@@ -188,6 +188,17 @@ body {
   z-index: 10;
 }
 
+.repo-drag-tail {
+  height: 12px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.repo-drag-tail.repo-drag-over::before {
+  top: auto;
+  bottom: 0;
+}
+
 .side-pane-toggle {
   background: none;
   border: none;
@@ -406,6 +417,32 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   padding-top: 2px;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.repo-branch-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.repo-fetch-status {
+  margin-left: 4px;
+  flex-shrink: 0;
+  animation: spin 1s linear infinite;
+}
+
+.repo-fetch-error {
+  margin-left: 4px;
+  flex-shrink: 0;
+  color: var(--warning);
+  cursor: help;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .repo-subdirs {
@@ -561,6 +598,11 @@ body {
   border-color: var(--accent);
 }
 
+.terminal-panel-waiting,
+.terminal-panel-focused.terminal-panel-waiting {
+  border-color: var(--warning);
+}
+
 .terminal-header {
   display: flex;
   align-items: center;
@@ -575,6 +617,11 @@ body {
 .terminal-header-focused {
   background: var(--bg-header-focused);
   border-bottom-color: var(--accent);
+}
+
+.terminal-header-waiting,
+.terminal-header-focused.terminal-header-waiting {
+  border-bottom-color: var(--warning);
 }
 
 .terminal-label {
@@ -634,10 +681,6 @@ body {
 
 .terminal-body .xterm {
   height: 100%;
-}
-
-.terminal-body .xterm .xterm-viewport {
-  z-index: 1;
 }
 
 .terminal-error {

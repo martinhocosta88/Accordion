@@ -11,6 +11,7 @@ import {
   hasPty,
   closeAllPtys,
 } from './main/pty-manager';
+import { startClaudeStateServer, stopClaudeStateServer } from './main/claude-state-server';
 
 const CONFIG_PATH = path.join(
   app.getPath('appData'),
@@ -217,10 +218,15 @@ ipcMain.handle('git:get-diff', async (_event, dirPath: string) => {
 });
 
 ipcMain.handle('git:fetch', async (_event, dirPath: string) => {
-  if (!isPathWithinRepos(dirPath)) return false;
-  return new Promise<boolean>((resolve) => {
-    execFile('git', ['fetch', '--all', '--prune'], { cwd: dirPath, timeout: 30000 }, (err) => {
-      resolve(!err);
+  if (!isPathWithinRepos(dirPath)) return { ok: false, error: 'Path not allowed' };
+  return new Promise<{ ok: boolean; error?: string }>((resolve) => {
+    execFile('git', ['fetch', '--all', '--prune'], { cwd: dirPath, timeout: 30000 }, (err, _stdout, stderr) => {
+      if (err) {
+        const msg = stderr?.trim() || err.message || 'Fetch failed';
+        resolve({ ok: false, error: msg });
+      } else {
+        resolve({ ok: true });
+      }
     });
   });
 });
@@ -310,9 +316,13 @@ ipcMain.handle('pty:has', (_event, id: string) => {
 });
 
 // App lifecycle
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  createWindow();
+  if (mainWindow) startClaudeStateServer(mainWindow);
+});
 
 app.on('window-all-closed', () => {
+  stopClaudeStateServer();
   closeAllPtys();
   app.quit();
 });

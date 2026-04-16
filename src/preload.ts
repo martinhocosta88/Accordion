@@ -27,7 +27,7 @@ const api: ElectronAPI = {
     getBranch: (dirPath: string) => ipcRenderer.invoke('git:get-branch', dirPath),
     getDiff: (dirPath: string) => ipcRenderer.invoke('git:get-diff', dirPath),
     changedFileCount: (dirPath: string) => ipcRenderer.invoke('git:changed-file-count', dirPath),
-    fetch: (dirPath: string) => ipcRenderer.invoke('git:fetch', dirPath),
+    fetch: (dirPath: string): Promise<{ ok: boolean; error?: string }> => ipcRenderer.invoke('git:fetch', dirPath),
     listBranches: (dirPath: string) => ipcRenderer.invoke('git:list-branches', dirPath),
     checkout: (dirPath: string, branch: string) => ipcRenderer.invoke('git:checkout', dirPath, branch),
     resetHard: (dirPath: string) => ipcRenderer.invoke('git:reset-hard', dirPath),
@@ -56,6 +56,17 @@ const api: ElectronAPI = {
       ipcRenderer.on('pty:exit', handler);
       return () => {
         ipcRenderer.removeListener('pty:exit', handler);
+      };
+    },
+    onClaudeState: (callback: (id: string, state: string) => void) => {
+      const handler = (
+        _event: Electron.IpcRendererEvent,
+        id: string,
+        state: string
+      ) => callback(id, state);
+      ipcRenderer.on('pty:claude-state', handler);
+      return () => {
+        ipcRenderer.removeListener('pty:claude-state', handler);
       };
     },
   },

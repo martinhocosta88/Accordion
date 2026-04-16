@@ -1,8 +1,18 @@
 import * as pty from 'node-pty';
 import * as crypto from 'crypto';
 import { BrowserWindow } from 'electron';
+import { CLAUDE_STATE_PORT } from './claude-state-server';
 
 const processes = new Map<string, pty.IPty>();
+const cwdToPtyId = new Map<string, string>();
+
+function normalizeCwd(cwd: string): string {
+  return cwd.replace(/\\/g, '/').replace(/\/$/, '').toLowerCase();
+}
+
+export function getPtyIdByCwd(cwd: string): string | null {
+  return cwdToPtyId.get(normalizeCwd(cwd)) || null;
+}
 
 const DANGEROUS_ENV_KEYS = new Set([
   'ELECTRON_RUN_AS_NODE',
@@ -28,7 +38,11 @@ export function createPty(cwd: string, window: BrowserWindow): string {
   const ptyProcess = pty.spawn(shell, [], {
     name: 'xterm-256color',
     cwd,
-    env: getSafeEnv(),
+    env: {
+      ...getSafeEnv(),
+      ACCORDION_PTY_ID: id,
+      ACCORDION_STATE_PORT: String(CLAUDE_STATE_PORT),
+    },
   });
 
   ptyProcess.onData((data) => {
@@ -45,6 +59,7 @@ export function createPty(cwd: string, window: BrowserWindow): string {
   });
 
   processes.set(id, ptyProcess);
+  cwdToPtyId.set(normalizeCwd(cwd), id);
   return id;
 }
 
@@ -65,6 +80,9 @@ export function closePty(id: string): void {
   if (p) {
     p.kill();
     processes.delete(id);
+    for (const [cwd, ptyId] of cwdToPtyId) {
+      if (ptyId === id) { cwdToPtyId.delete(cwd); break; }
+    }
   }
 }
 

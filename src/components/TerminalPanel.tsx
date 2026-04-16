@@ -49,6 +49,7 @@ export function TerminalPanel({
   const terminalRef = useRef<Terminal | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
   const [changedFiles, setChangedFiles] = useState(0);
+  const [claudeWaiting, setClaudeWaiting] = useState(false);
 
   // Poll changed file count
   useEffect(() => {
@@ -70,6 +71,16 @@ export function TerminalPanel({
     };
   }, [cwd]);
 
+  // Listen for Claude state changes (waiting for input vs busy)
+  useEffect(() => {
+    const unsubscribe = window.electronAPI.pty.onClaudeState((id, state) => {
+      if (id === ptyId || id === '*') {
+        setClaudeWaiting(state === 'waiting');
+      }
+    });
+    return unsubscribe;
+  }, [ptyId]);
+
   // Centralized data dispatch — one global listener, not one per terminal
   usePtyData(ptyId, (data) => {
     if (terminalRef.current) {
@@ -86,6 +97,10 @@ export function TerminalPanel({
       fontFamily: "'Cascadia Code', 'Consolas', monospace",
       fontSize: 14,
       theme: getXtermTheme(theme),
+      windowsPty: {
+        backend: 'conpty',
+        buildNumber: 19041,
+      },
     });
 
     const fitAddon = new FitAddon();
@@ -123,6 +138,17 @@ export function TerminalPanel({
       fitAddonRef.current = null;
     };
   }, [ptyId]);
+
+  // Focus the xterm instance when this terminal becomes focused
+  // Also dismiss the waiting highlight — user has seen the notification
+  useEffect(() => {
+    if (isFocused) {
+      setClaudeWaiting(false);
+      if (terminalRef.current) {
+        terminalRef.current.focus();
+      }
+    }
+  }, [isFocused]);
 
   // Update xterm theme when app theme changes
   useEffect(() => {
@@ -164,9 +190,9 @@ export function TerminalPanel({
   }, [ptyId]);
 
   return (
-    <div className={`terminal-panel${isFocused ? ' terminal-panel-focused' : ''}`} onMouseDown={onFocus}>
+    <div className={`terminal-panel${isFocused ? ' terminal-panel-focused' : ''}${claudeWaiting ? ' terminal-panel-waiting' : ''}`} onMouseDown={onFocus}>
       <div
-        className={`terminal-header${isFocused ? ' terminal-header-focused' : ''}${dragOverId === terminalId ? ' terminal-header-drop-target' : ''}`}
+        className={`terminal-header${isFocused ? ' terminal-header-focused' : ''}${claudeWaiting ? ' terminal-header-waiting' : ''}${dragOverId === terminalId ? ' terminal-header-drop-target' : ''}`}
         draggable={!dragDisabled}
         onDragStart={(e) => {
           e.dataTransfer.effectAllowed = 'move';

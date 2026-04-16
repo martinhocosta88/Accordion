@@ -37,7 +37,7 @@ export interface ElectronAPI {
     getBranch(dirPath: string): Promise<string | null>;
     getDiff(dirPath: string): Promise<string>;
     changedFileCount(dirPath: string): Promise<number>;
-    fetch(dirPath: string): Promise<boolean>;
+    fetch(dirPath: string): Promise<{ ok: boolean; error?: string }>;
     listBranches(dirPath: string): Promise<string[]>;
     checkout(dirPath: string, branch: string): Promise<{ ok: boolean; error?: string }>;
     resetHard(dirPath: string): Promise<boolean>;
@@ -50,6 +50,7 @@ export interface ElectronAPI {
     has(id: string): Promise<boolean>;
     onData(callback: (id: string, data: string) => void): () => void;
     onExit(callback: (id: string) => void): () => void;
+    onClaudeState(callback: (id: string, state: string) => void): () => void;
   };
 }
 
