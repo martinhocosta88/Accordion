@@ -65,6 +65,7 @@ interface CommentTarget {
   filePath: string;
   hunkIndex: number;
   lineIndex: number;
+  selectedText?: string; // specific text selection within the line
 }
 
 function sameTarget(a: CommentTarget | null, b: CommentTarget): boolean {
@@ -85,6 +86,7 @@ export function DiffPanel({ cwd, label, ptyId, onClose }: DiffPanelProps) {
   const [commentTarget, setCommentTarget] = useState<CommentTarget | null>(null);
   const [commentText, setCommentText] = useState('');
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
+  const textSelectHandledRef = useRef(false);
 
   useEffect(() => {
     setLoading(true);
@@ -133,7 +135,13 @@ export function DiffPanel({ cwd, label, ptyId, onClose }: DiffPanelProps) {
   };
 
   const handleLineClick = (filePath: string, hunkIndex: number, lineIndex: number) => {
-    const target = { filePath, hunkIndex, lineIndex };
+    // If mouseup just handled a text selection, skip the click
+    if (textSelectHandledRef.current) {
+      textSelectHandledRef.current = false;
+      return;
+    }
+
+    const target: CommentTarget = { filePath, hunkIndex, lineIndex };
     if (sameTarget(commentTarget, target)) {
       setCommentTarget(null);
       setCommentText('');
@@ -141,6 +149,26 @@ export function DiffPanel({ cwd, label, ptyId, onClose }: DiffPanelProps) {
       setCommentTarget(target);
       setCommentText('');
     }
+  };
+
+  const handleTextSelect = (filePath: string, hunkIndex: number, lineIndex: number) => {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed) return;
+
+    const selected = sel.toString().trim();
+    if (!selected) return;
+
+    // Verify the selection is within a diff-line-content span
+    const anchor = sel.anchorNode?.parentElement;
+    const focus = sel.focusNode?.parentElement;
+    const isInContent = (el: Element | null | undefined) =>
+      el?.closest('.diff-line-content') != null;
+    if (!isInContent(anchor) && !isInContent(focus)) return;
+
+    textSelectHandledRef.current = true;
+    setCommentTarget({ filePath, hunkIndex, lineIndex, selectedText: selected });
+    setCommentText('');
+    sel.removeAllRanges();
   };
 
   const safePtyWrite = async (data: string) => {
@@ -162,12 +190,22 @@ export function DiffPanel({ cwd, label, ptyId, onClose }: DiffPanelProps) {
     if (!line) return;
 
     const prefix = line.type === 'add' ? '+' : '-';
-    const message = [
-      `In ${file.path}, regarding this change:`,
-      `${prefix} ${line.content}`,
-      ``,
-      commentText.trim(),
-    ].join('\n');
+    let message: string;
+    if (commentTarget.selectedText) {
+      message = [
+        `In ${file.path}, regarding \`${commentTarget.selectedText}\` in this change:`,
+        `${prefix} ${line.content}`,
+        ``,
+        commentText.trim(),
+      ].join('\n');
+    } else {
+      message = [
+        `In ${file.path}, regarding this change:`,
+        `${prefix} ${line.content}`,
+        ``,
+        commentText.trim(),
+      ].join('\n');
+    }
 
     safePtyWrite(message + '\n');
 
@@ -240,6 +278,7 @@ export function DiffPanel({ cwd, label, ptyId, onClose }: DiffPanelProps) {
                               <div
                                 className={`diff-line diff-line-${line.type}${isClickable ? ' diff-line-clickable' : ''}${isActive ? ' diff-line-active' : ''}`}
                                 onClick={isClickable ? () => handleLineClick(file.path, hi, li) : undefined}
+                                onMouseUp={isClickable ? () => handleTextSelect(file.path, hi, li) : undefined}
                               >
                                 <span className="diff-line-prefix">
                                   {line.type === 'add'
@@ -254,6 +293,11 @@ export function DiffPanel({ cwd, label, ptyId, onClose }: DiffPanelProps) {
                               </div>
                               {isActive && (
                                 <div className="diff-comment">
+                                  {commentTarget?.selectedText && (
+                                    <div className="diff-comment-selection">
+                                      Selected: <code>{commentTarget.selectedText}</code>
+                                    </div>
+                                  )}
                                   <textarea
                                     ref={commentInputRef}
                                     className="diff-comment-input"
