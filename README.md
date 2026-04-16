@@ -30,6 +30,8 @@ Accordion opens a terminal grid where each pane runs Claude Code in a different 
 
 **Repo Management** — Add, remove, and reorder repositories in the settings dialog. Drag repos up or down to control their sidebar order.
 
+**Claude Input Highlighting** — Terminal borders turn yellow when Claude Code is waiting for your input. Uses Claude Code's hooks system to signal state changes — no polling or heuristics. Focusing a highlighted terminal dismisses the notification. Requires a one-time hook configuration in `~/.claude/settings.json` (see [setup guide](docs/claude-terminal-highlighting.md)).
+
 **Collapsible Side Pane** — Collapse the repository browser to a narrow icon strip to maximize terminal space.
 
 ## Getting Started
@@ -71,6 +73,7 @@ src/
   main/
     config-manager.ts      # Config CRUD (repos, theme)
     pty-manager.ts         # node-pty process lifecycle
+    claude-state-server.ts # HTTP server for Claude Code hook signals
 
   components/
     App.tsx                # Root layout, state orchestration
@@ -113,6 +116,7 @@ src/
 | Revert changes | Right-click a repo folder > Revert |
 | Open in explorer | Right-click a repo folder > Go to Folder |
 | Collapse sidebar | Click the arrow in the side pane header |
+| Enable Claude highlighting | Add hooks to `~/.claude/settings.json` ([guide](docs/claude-terminal-highlighting.md)) |
 | Zoom in/out | Use +/- buttons in the sidebar footer |
 | Add repos | Settings > + Add Repository |
 | Reorder repos | Settings > Use ▲/▼ arrows next to each repo |
