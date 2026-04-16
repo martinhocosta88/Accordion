@@ -158,27 +158,37 @@ export function SidePane({
                 No repositories configured. Click + to add one.
               </div>
             ) : (
-              config.repos.map((repoPath, index) => (
-                <div
-                  key={repoPath}
-                  draggable
-                  onDragStart={handleDragStart(index)}
-                  onDragEnd={handleDragEnd}
-                  onDragOver={handleDragOver(index)}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop(index)}
-                  className={`repo-drag-wrapper${dropIndex === index ? ' repo-drag-over' : ''}${draggingIndex === index ? ' repo-drag-source' : ''}`}
-                >
-                  <RepoItem
-                    repoPath={repoPath}
-                    onOpenTerminal={onOpenTerminal}
-                    disabled={!canAddTerminal}
-                    activeTerminalPaths={activeTerminalPaths}
-                    focusedTerminalPath={focusedTerminalPath}
-                    onRemove={() => onRemoveRepo(repoPath)}
+              <>
+                {config.repos.map((repoPath, index) => (
+                  <div
+                    key={repoPath}
+                    draggable
+                    onDragStart={handleDragStart(index)}
+                    onDragEnd={handleDragEnd}
+                    onDragOver={handleDragOver(index)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop(index)}
+                    className={`repo-drag-wrapper${dropIndex === index ? ' repo-drag-over' : ''}${draggingIndex === index ? ' repo-drag-source' : ''}`}
+                  >
+                    <RepoItem
+                      repoPath={repoPath}
+                      onOpenTerminal={onOpenTerminal}
+                      disabled={!canAddTerminal}
+                      activeTerminalPaths={activeTerminalPaths}
+                      focusedTerminalPath={focusedTerminalPath}
+                      onRemove={() => onRemoveRepo(repoPath)}
+                    />
+                  </div>
+                ))}
+                {draggingIndex !== null && (
+                  <div
+                    className={`repo-drag-tail${dropIndex === config.repos.length ? ' repo-drag-over' : ''}`}
+                    onDragOver={handleDragOver(config.repos.length)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop(config.repos.length)}
                   />
-                </div>
-              ))
+                )}
+              </>
             )}
           </div>
           <div className="side-pane-footer">

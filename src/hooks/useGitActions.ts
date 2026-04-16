@@ -7,6 +7,7 @@ export function useGitActions(repoPath: string) {
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [showBranchPicker, setShowBranchPicker] = useState(false);
   const [fetching, setFetching] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [reverting, setReverting] = useState(false);
   const [showRevertConfirm, setShowRevertConfirm] = useState(false);
   const branchRef = useRef(branch);
@@ -30,9 +31,14 @@ export function useGitActions(repoPath: string) {
 
   const handleFetch = useCallback(async () => {
     setFetching(true);
-    await window.electronAPI.git.fetch(repoPath);
+    setFetchError(null);
+    const result = await window.electronAPI.git.fetch(repoPath);
     setFetching(false);
-    window.dispatchEvent(new CustomEvent('git-changed', { detail: { path: repoPath } }));
+    if (result.ok) {
+      window.dispatchEvent(new CustomEvent('git-changed', { detail: { path: repoPath } }));
+    } else {
+      setFetchError(result.error || 'Fetch failed');
+    }
   }, [repoPath]);
 
   const handleRevert = useCallback(async () => {
@@ -79,6 +85,8 @@ export function useGitActions(repoPath: string) {
 
   return {
     branch,
+    fetching,
+    fetchError,
     contextMenu,
     setContextMenu,
     showBranchPicker,

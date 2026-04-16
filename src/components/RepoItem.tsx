@@ -71,7 +71,11 @@ function SubDirItem({
             <span className="repo-text-truncate">{sub.name}</span>
           </button>
           {git.branch && (
-            <div className="repo-branch">{'\u2387'} {git.branch}</div>
+            <div className="repo-branch">
+              <span className="repo-branch-text">{'\u2387'} {git.branch}</span>
+              {git.fetching && <span className="repo-fetch-status" title="Fetching...">{'\u21BB'}</span>}
+              {git.fetchError && <span className="repo-fetch-error" title={git.fetchError}>{'\u26A0'}</span>}
+            </div>
           )}
         </div>
         {hasExpandableChildren && (
@@ -213,7 +217,11 @@ export function RepoItem({
             <span className="repo-text-truncate">{repoName}</span>
           </button>
           {git.branch && (
-            <div className="repo-branch">{'\u2387'} {git.branch}</div>
+            <div className="repo-branch">
+              <span className="repo-branch-text">{'\u2387'} {git.branch}</span>
+              {git.fetching && <span className="repo-fetch-status" title="Fetching...">{'\u21BB'}</span>}
+              {git.fetchError && <span className="repo-fetch-error" title={git.fetchError}>{'\u26A0'}</span>}
+            </div>
           )}
         </div>
         {hasExpandableChildren && (
