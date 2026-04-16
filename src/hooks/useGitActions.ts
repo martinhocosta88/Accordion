@@ -10,6 +10,8 @@ export function useGitActions(repoPath: string) {
   const [showBranchPicker, setShowBranchPicker] = useState(false);
   const [fetching, setFetching] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [pulling, setPulling] = useState(false);
+  const [pullError, setPullError] = useState<string | null>(null);
   const [reverting, setReverting] = useState(false);
   const [showRevertConfirm, setShowRevertConfirm] = useState(false);
   const branchRef = useRef(branch);
@@ -52,6 +54,18 @@ export function useGitActions(repoPath: string) {
     }
   }, [repoPath]);
 
+  const handlePull = useCallback(async () => {
+    setPulling(true);
+    setPullError(null);
+    const result = await window.electronAPI.git.pull(repoPath);
+    setPulling(false);
+    if (result.ok) {
+      window.dispatchEvent(new CustomEvent('git-changed', { detail: { path: repoPath } }));
+    } else {
+      setPullError(result.error || 'Pull failed');
+    }
+  }, [repoPath]);
+
   const handleRevert = useCallback(async () => {
     setReverting(true);
     await window.electronAPI.git.resetHard(repoPath);
@@ -76,6 +90,12 @@ export function useGitActions(repoPath: string) {
       onClick: handleFetch,
     },
     {
+      label: pulling ? 'Pulling...' : 'Pull',
+      icon: '\u2B73',
+      disabled: pulling,
+      onClick: handlePull,
+    },
+    {
       label: 'Switch Branch',
       icon: '\u2387',
       onClick: () => setShowBranchPicker(true),
@@ -92,13 +112,16 @@ export function useGitActions(repoPath: string) {
       separator: true,
       onClick: handleOpenFolder,
     },
-  ], [fetching, reverting, handleFetch, handleOpenFolder]);
+  ], [fetching, pulling, reverting, handleFetch, handlePull, handleOpenFolder]);
 
   return {
     branch,
     aheadBehind,
     fetching,
     fetchError,
+    pulling,
+    pullError,
+    setPullError,
     contextMenu,
     setContextMenu,
     showBranchPicker,

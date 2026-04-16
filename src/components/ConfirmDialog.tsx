@@ -4,7 +4,7 @@ interface ConfirmDialogProps {
   message: string;
   confirmLabel?: string;
   onConfirm: () => void;
-  onCancel: () => void;
+  onCancel?: () => void;
 }
 
 export function ConfirmDialog({
@@ -13,29 +13,36 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
-  const cancelRef = useRef<HTMLButtonElement>(null);
+  const firstBtnRef = useRef<HTMLButtonElement>(null);
+  const dismiss = onCancel ?? onConfirm;
 
   useEffect(() => {
-    cancelRef.current?.focus();
+    firstBtnRef.current?.focus();
   }, []);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCancel();
+      if (e.key === 'Escape') dismiss();
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [onCancel]);
+  }, [dismiss]);
 
   return (
-    <div className="settings-overlay" onClick={onCancel}>
+    <div className="settings-overlay" onClick={dismiss}>
       <div className="confirm-dialog" onClick={(e) => e.stopPropagation()}>
         <p className="confirm-dialog-message">{message}</p>
         <div className="confirm-dialog-actions">
-          <button ref={cancelRef} className="confirm-dialog-cancel" onClick={onCancel}>
-            Cancel
-          </button>
-          <button className="confirm-dialog-confirm" onClick={onConfirm}>
+          {onCancel && (
+            <button ref={firstBtnRef} className="confirm-dialog-cancel" onClick={onCancel}>
+              Cancel
+            </button>
+          )}
+          <button
+            ref={onCancel ? undefined : firstBtnRef}
+            className="confirm-dialog-confirm"
+            onClick={onConfirm}
+          >
             {confirmLabel}
           </button>
         </div>

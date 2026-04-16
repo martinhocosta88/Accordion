@@ -246,6 +246,20 @@ ipcMain.handle('git:fetch', async (_event, dirPath: string) => {
   });
 });
 
+ipcMain.handle('git:pull', async (_event, dirPath: string) => {
+  if (!isPathWithinRepos(dirPath)) return { ok: false, error: 'Path not allowed' };
+  return new Promise<{ ok: boolean; error?: string }>((resolve) => {
+    execFile('git', ['pull', '--ff-only'], { cwd: dirPath, timeout: 60000 }, (err, stdout, stderr) => {
+      if (err) {
+        const msg = stderr?.trim() || stdout?.trim() || err.message || 'Pull failed';
+        resolve({ ok: false, error: msg });
+      } else {
+        resolve({ ok: true });
+      }
+    });
+  });
+});
+
 ipcMain.handle('git:list-branches', async (_event, dirPath: string) => {
   if (!isPathWithinRepos(dirPath)) return [];
   return new Promise<string[]>((resolve) => {

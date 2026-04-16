@@ -29,6 +29,7 @@ const api: ElectronAPI = {
     getDiff: (dirPath: string) => ipcRenderer.invoke('git:get-diff', dirPath),
     changedFileCount: (dirPath: string) => ipcRenderer.invoke('git:changed-file-count', dirPath),
     fetch: (dirPath: string): Promise<{ ok: boolean; error?: string }> => ipcRenderer.invoke('git:fetch', dirPath),
+    pull: (dirPath: string): Promise<{ ok: boolean; error?: string }> => ipcRenderer.invoke('git:pull', dirPath),
     listBranches: (dirPath: string) => ipcRenderer.invoke('git:list-branches', dirPath),
     checkout: (dirPath: string, branch: string) => ipcRenderer.invoke('git:checkout', dirPath, branch),
     resetHard: (dirPath: string) => ipcRenderer.invoke('git:reset-hard', dirPath),

@@ -45,6 +45,7 @@ export interface ElectronAPI {
     getDiff(dirPath: string): Promise<string>;
     changedFileCount(dirPath: string): Promise<number>;
     fetch(dirPath: string): Promise<{ ok: boolean; error?: string }>;
+    pull(dirPath: string): Promise<{ ok: boolean; error?: string }>;
     listBranches(dirPath: string): Promise<string[]>;
     checkout(dirPath: string, branch: string): Promise<{ ok: boolean; error?: string }>;
     resetHard(dirPath: string): Promise<boolean>;

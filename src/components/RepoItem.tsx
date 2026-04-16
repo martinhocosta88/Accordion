@@ -83,7 +83,9 @@ function SubDirItem({
                   {'\u2193'}{git.aheadBehind.behind}
                 </span>
               )}
-              {git.fetching && <span className="repo-fetch-status" title="Fetching...">{'\u21BB'}</span>}
+              {(git.fetching || git.pulling) && (
+                <span className="repo-fetch-status" title={git.pulling ? 'Pulling...' : 'Fetching...'}>{'\u21BB'}</span>
+              )}
               {git.fetchError && <span className="repo-fetch-error" title={git.fetchError}>{'\u26A0'}</span>}
             </div>
           )}
@@ -139,6 +141,13 @@ function SubDirItem({
           confirmLabel="Revert"
           onConfirm={git.handleRevert}
           onCancel={() => git.setShowRevertConfirm(false)}
+        />
+      )}
+      {git.pullError && (
+        <ConfirmDialog
+          message={`Pull failed:\n\n${git.pullError}`}
+          confirmLabel="OK"
+          onConfirm={() => git.setPullError(null)}
         />
       )}
     </div>
@@ -239,7 +248,9 @@ export function RepoItem({
                   {'\u2193'}{git.aheadBehind.behind}
                 </span>
               )}
-              {git.fetching && <span className="repo-fetch-status" title="Fetching...">{'\u21BB'}</span>}
+              {(git.fetching || git.pulling) && (
+                <span className="repo-fetch-status" title={git.pulling ? 'Pulling...' : 'Fetching...'}>{'\u21BB'}</span>
+              )}
               {git.fetchError && <span className="repo-fetch-error" title={git.fetchError}>{'\u26A0'}</span>}
             </div>
           )}
@@ -288,6 +299,13 @@ export function RepoItem({
           confirmLabel="Revert"
           onConfirm={git.handleRevert}
           onCancel={() => git.setShowRevertConfirm(false)}
+        />
+      )}
+      {git.pullError && (
+        <ConfirmDialog
+          message={`Pull failed:\n\n${git.pullError}`}
+          confirmLabel="OK"
+          onConfirm={() => git.setPullError(null)}
         />
       )}
     </div>

@@ -1022,6 +1022,10 @@ body {
   font-size: 14px;
   line-height: 1.5;
   margin: 0 0 20px 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 60vh;
+  overflow-y: auto;
 }
 
 .confirm-dialog-actions {
