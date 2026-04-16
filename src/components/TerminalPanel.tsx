@@ -50,6 +50,7 @@ export function TerminalPanel({
   const fitAddonRef = useRef<FitAddon | null>(null);
   const [changedFiles, setChangedFiles] = useState(0);
   const [claudeWaiting, setClaudeWaiting] = useState(false);
+  const claudeWaitingRef = useRef(false);
 
   // Poll changed file count
   useEffect(() => {
@@ -75,7 +76,9 @@ export function TerminalPanel({
   useEffect(() => {
     const unsubscribe = window.electronAPI.pty.onClaudeState((id, state) => {
       if (id === ptyId || id === '*') {
-        setClaudeWaiting(state === 'waiting');
+        const waiting = state === 'waiting';
+        setClaudeWaiting(waiting);
+        claudeWaitingRef.current = waiting;
       }
     });
     return unsubscribe;
@@ -128,6 +131,10 @@ export function TerminalPanel({
 
     const dataDisposable = terminal.onData((data) => {
       window.electronAPI.pty.write(ptyId, data);
+      if (claudeWaitingRef.current) {
+        claudeWaitingRef.current = false;
+        setClaudeWaiting(false);
+      }
     });
 
     return () => {
@@ -143,6 +150,7 @@ export function TerminalPanel({
   // Also dismiss the waiting highlight — user has seen the notification
   useEffect(() => {
     if (isFocused) {
+      claudeWaitingRef.current = false;
       setClaudeWaiting(false);
       if (terminalRef.current) {
         terminalRef.current.focus();
@@ -190,7 +198,7 @@ export function TerminalPanel({
   }, [ptyId]);
 
   return (
-    <div className={`terminal-panel${isFocused ? ' terminal-panel-focused' : ''}${claudeWaiting ? ' terminal-panel-waiting' : ''}`} onMouseDown={onFocus}>
+    <div className={`terminal-panel${isFocused ? ' terminal-panel-focused' : ''}${claudeWaiting ? ' terminal-panel-waiting' : ''}`} onMouseDown={() => { onFocus(); if (claudeWaiting) { claudeWaitingRef.current = false; setClaudeWaiting(false); } }}>
       <div
         className={`terminal-header${isFocused ? ' terminal-header-focused' : ''}${claudeWaiting ? ' terminal-header-waiting' : ''}${dragOverId === terminalId ? ' terminal-header-drop-target' : ''}`}
         draggable={!dragDisabled}

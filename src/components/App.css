@@ -31,7 +31,7 @@ body,
   --text-header: #8888cc;
   --btn-hover: #2a2a50;
   --error: #ff5555;
-  --warning: #ffcc33;
+  --warning: #4a6099;
   --selection: #3a3a6a;
 }
 
@@ -51,7 +51,7 @@ body,
   --text-header: #888888;
   --btn-hover: #383838;
   --error: #f44747;
-  --warning: #ffcc33;
+  --warning: #307a9a;
   --selection: #264f78;
 }
 
@@ -71,7 +71,7 @@ body,
   --text-header: #8b949e;
   --btn-hover: #21262d;
   --error: #f85149;
-  --warning: #d29922;
+  --warning: #35658f;
   --selection: #1c3a5c;
 }
 
@@ -91,7 +91,7 @@ body,
   --text-header: #666680;
   --btn-hover: #e0e0e8;
   --error: #d32f2f;
-  --warning: #c67600;
+  --warning: #7888b8;
   --selection: #b4c8f0;
 }
 
@@ -621,6 +621,7 @@ body {
 
 .terminal-header-waiting,
 .terminal-header-focused.terminal-header-waiting {
+  background: color-mix(in srgb, var(--warning) 15%, var(--bg-header));
   border-bottom-color: var(--warning);
 }
 
