@@ -18,13 +18,13 @@ Accordion opens a terminal grid where each pane runs Claude Code in a different 
 
 **Changed File Count** — Each terminal header shows the number of uncommitted changed files next to the diff button, updated automatically after git operations.
 
-**Git Diff Viewer** — Click the delta button on any terminal header to see unstaged changes in a split view. Files are listed with +/- counts and expand to show colored diffs. Untracked files are included alongside tracked changes.
+**Git Diff Viewer** — Click the delta button on any terminal header to see unstaged changes in a split view. Files are listed with +/- counts and expand to show colored diffs. Untracked files are included alongside tracked changes. Refresh and revert buttons sit in the diff header so you can reload the diff or discard all uncommitted changes without leaving the view.
 
 **Inline Diff Comments** — Click any changed line in the diff view to leave feedback. Comments are sent directly to the Claude session with file path and line context, so Claude can act on your review.
 
 **Four Color Themes** — Switch between Accordion (signature indigo), Carbon (neutral dark), Midnight (deep navy), and Light from the settings dialog. Themes apply instantly to the full UI and terminal colors.
 
-**Git Operations** — Right-click any repo folder to access Fetch, Switch Branch (with filter search), Revert, or Go to Folder. Each menu item has an icon, and destructive actions are visually separated. Branch names are shown below each folder.
+**Git Operations** — Right-click any repo folder to access Fetch, Pull, Switch Branch (with filter search), Revert, or Go to Folder. Pull uses `--ff-only` so diverged branches fail loudly instead of creating surprise merge commits; any error (network failure, non-fast-forward, conflicts) pops up in a dismissible alert with git's full message. Branch names are shown below each folder.
 
 **Zoom Control** — Adjust the UI zoom level from the sidebar footer (50%-200%).
 
@@ -112,8 +112,9 @@ src/
 | Comment on diff | Click a +/- line, type feedback, press Enter |
 | Change theme | Settings > Theme section |
 | Git fetch | Right-click a repo folder > Fetch |
+| Git pull | Right-click a repo folder > Pull (fast-forward only) |
 | Switch branch | Right-click a repo folder > Switch Branch |
-| Revert changes | Right-click a repo folder > Revert |
+| Revert changes | Right-click a repo folder > Revert, or click ↺ in the diff header |
 | Open in explorer | Right-click a repo folder > Go to Folder |
 | Collapse sidebar | Click the arrow in the side pane header |
 | Enable Claude highlighting | Add hooks to `~/.claude/settings.json` ([guide](docs/claude-terminal-highlighting.md)) |
