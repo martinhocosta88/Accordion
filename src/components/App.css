@@ -1122,6 +1122,71 @@ body {
   color: var(--warning);
 }
 
+.diff-commit-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-header);
+  flex-shrink: 0;
+}
+
+.diff-commit-input {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 8px;
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+.diff-commit-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.diff-commit-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.diff-commit-btn {
+  padding: 6px 10px;
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: filter 0.2s, background 0.2s;
+}
+
+.diff-commit-btn:hover:not(:disabled) {
+  background: var(--btn-hover);
+}
+
+.diff-commit-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.diff-commit-btn-push {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.diff-commit-btn-push:hover:not(:disabled) {
+  filter: brightness(1.15);
+  background: var(--accent);
+}
+
 .diff-body {
   flex: 1;
   overflow-y: auto;
@@ -1363,8 +1428,13 @@ body {
   transition: filter 0.2s;
 }
 
-.diff-finalize-btn:hover {
+.diff-finalize-btn:hover:not(:disabled) {
   filter: brightness(1.15);
+}
+
+.diff-finalize-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* === Scrollbar === */

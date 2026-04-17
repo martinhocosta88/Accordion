@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer, webFrame } from 'electron';
-import type { ElectronAPI } from './types';
+import type { ElectronAPI, OpenTerminal, UiState } from './types';
 
 const api: ElectronAPI = {
   config: {
@@ -8,6 +8,10 @@ const api: ElectronAPI = {
     removeRepo: (path: string) => ipcRenderer.invoke('config:remove-repo', path),
     reorderRepos: (repos: string[]) => ipcRenderer.invoke('config:reorder-repos', repos),
     setTheme: (theme: string) => ipcRenderer.invoke('config:set-theme', theme),
+    setOpenTerminals: (terminals: OpenTerminal[]) =>
+      ipcRenderer.invoke('config:set-open-terminals', terminals),
+    setUiState: (partial: Partial<UiState>) =>
+      ipcRenderer.invoke('config:set-ui-state', partial),
   },
   dialog: {
     selectDirectory: () => ipcRenderer.invoke('dialog:select-directory'),
@@ -33,6 +37,12 @@ const api: ElectronAPI = {
     listBranches: (dirPath: string) => ipcRenderer.invoke('git:list-branches', dirPath),
     checkout: (dirPath: string, branch: string) => ipcRenderer.invoke('git:checkout', dirPath, branch),
     resetHard: (dirPath: string) => ipcRenderer.invoke('git:reset-hard', dirPath),
+    stageAll: (dirPath: string): Promise<{ ok: boolean; error?: string }> =>
+      ipcRenderer.invoke('git:stage-all', dirPath),
+    commit: (dirPath: string, message: string): Promise<{ ok: boolean; error?: string }> =>
+      ipcRenderer.invoke('git:commit', dirPath, message),
+    push: (dirPath: string): Promise<{ ok: boolean; error?: string }> =>
+      ipcRenderer.invoke('git:push', dirPath),
   },
   pty: {
     create: (cwd: string) => ipcRenderer.invoke('pty:create', cwd),

@@ -58,7 +58,10 @@ export function TerminalGrid({
 
   const dragDisabled = !!maximizedId || !!diffTerminalId;
 
-  // Alt+Arrow keyboard navigation between terminals
+  // Alt+Arrow keyboard navigation between terminals.
+  // Registered in capture phase because xterm.js stops propagation on Alt+key
+  // combinations inside its textarea listener, which would otherwise swallow
+  // the event before it reaches a bubble-phase window listener.
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!e.altKey || terminals.length <= 1 || !focusedId) return;
@@ -66,6 +69,7 @@ export function TerminalGrid({
       if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(key)) return;
 
       e.preventDefault();
+      e.stopPropagation();
       const currentIndex = terminals.findIndex((t) => t.id === focusedId);
       if (currentIndex === -1) return;
 
@@ -90,8 +94,8 @@ export function TerminalGrid({
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
   }, [terminals, focusedId, onFocus]);
 
   const gridStyle = useMemo((): React.CSSProperties => {

@@ -1,8 +1,8 @@
-import { app, BrowserWindow, Menu, ipcMain, dialog, shell } from 'electron';
+import { app, BrowserWindow, Menu, ipcMain, dialog, shell, screen } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import { execFile } from 'child_process';
-import { readConfig, addRepo, removeRepo, reorderRepos, setTheme } from './main/config-manager';
+import { readConfig, addRepo, removeRepo, reorderRepos, setTheme, setOpenTerminals, setUiState } from './main/config-manager';
 import { parseAheadBehind } from './main/git-helpers';
 import {
   createPty,
@@ -21,11 +21,43 @@ const CONFIG_PATH = path.join(
 );
 
 let mainWindow: BrowserWindow | null = null;
+let geometrySaveTimer: NodeJS.Timeout | null = null;
+
+function scheduleGeometrySave() {
+  if (!mainWindow) return;
+  if (geometrySaveTimer) clearTimeout(geometrySaveTimer);
+  geometrySaveTimer = setTimeout(() => {
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    const maximized = mainWindow.isMaximized();
+    const bounds = maximized ? mainWindow.getNormalBounds() : mainWindow.getBounds();
+    invalidateConfigCache();
+    setUiState(CONFIG_PATH, {
+      window: {
+        x: bounds.x,
+        y: bounds.y,
+        width: bounds.width,
+        height: bounds.height,
+        maximized,
+      },
+    });
+  }, 500);
+}
+
+function isPointOnAnyDisplay(x: number, y: number): boolean {
+  const displays = screen.getAllDisplays();
+  return displays.some((d) => {
+    const { x: dx, y: dy, width, height } = d.bounds;
+    return x >= dx && x < dx + width && y >= dy && y < dy + height;
+  });
+}
 
 function createWindow() {
-  mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+  const saved = readConfig(CONFIG_PATH).uiState?.window;
+  const width = saved?.width ?? 1200;
+  const height = saved?.height ?? 800;
+  const options: Electron.BrowserWindowConstructorOptions = {
+    width,
+    height,
     minWidth: 800,
     minHeight: 600,
     title: 'Accordion',
@@ -36,6 +68,50 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
     },
+  };
+  // Only restore position if the top-left corner is on a currently connected display —
+  // otherwise Electron may refuse to apply the bounds and silently fall back to defaults.
+  if (
+    saved &&
+    typeof saved.x === 'number' &&
+    typeof saved.y === 'number' &&
+    isPointOnAnyDisplay(saved.x, saved.y)
+  ) {
+    options.x = saved.x;
+    options.y = saved.y;
+  }
+  mainWindow = new BrowserWindow(options);
+  // Apply size/position via setBounds as well — constructor options can be ignored
+  // when position is off-screen, which also drops width/height on some platforms.
+  const applyBounds: Electron.Rectangle = { x: options.x ?? 0, y: options.y ?? 0, width, height };
+  if (typeof options.x === 'number' && typeof options.y === 'number') {
+    mainWindow.setBounds(applyBounds);
+  } else {
+    mainWindow.setSize(width, height);
+    mainWindow.center();
+  }
+  if (saved?.maximized) mainWindow.maximize();
+
+  mainWindow.on('resize', scheduleGeometrySave);
+  mainWindow.on('move', scheduleGeometrySave);
+  mainWindow.on('maximize', scheduleGeometrySave);
+  mainWindow.on('unmaximize', scheduleGeometrySave);
+  mainWindow.on('close', () => {
+    if (geometrySaveTimer) clearTimeout(geometrySaveTimer);
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      const maximized = mainWindow.isMaximized();
+      const bounds = maximized ? mainWindow.getNormalBounds() : mainWindow.getBounds();
+      invalidateConfigCache();
+      setUiState(CONFIG_PATH, {
+        window: {
+          x: bounds.x,
+          y: bounds.y,
+          width: bounds.width,
+          height: bounds.height,
+          maximized,
+        },
+      });
+    }
   });
 
   // Keep clipboard accelerators (Ctrl+C/V/X/A) working while hiding the menu bar
@@ -71,6 +147,14 @@ ipcMain.handle('config:reorder-repos', (_event, repos: string[]) => {
   if (!Array.isArray(repos)) return readConfig(CONFIG_PATH);
   invalidateConfigCache();
   return reorderRepos(CONFIG_PATH, repos);
+});
+ipcMain.handle('config:set-open-terminals', (_event, terminals: unknown) => {
+  invalidateConfigCache();
+  setOpenTerminals(CONFIG_PATH, terminals);
+});
+ipcMain.handle('config:set-ui-state', (_event, partial: unknown) => {
+  invalidateConfigCache();
+  setUiState(CONFIG_PATH, partial);
 });
 
 // Dialog IPC handler
@@ -318,6 +402,55 @@ ipcMain.handle('git:reset-hard', async (_event, dirPath: string) => {
   // Clean untracked files — even if this fails, tracked changes were already reverted
   await runGit(['clean', '-fd']);
   return true;
+});
+
+ipcMain.handle('git:stage-all', async (_event, dirPath: string) => {
+  if (!isPathWithinRepos(dirPath)) return { ok: false, error: 'Path not allowed' };
+  return new Promise<{ ok: boolean; error?: string }>((resolve) => {
+    execFile('git', ['add', '-A'], { cwd: dirPath, timeout: 30000 }, (err, _stdout, stderr) => {
+      if (err) {
+        resolve({ ok: false, error: stderr?.trim() || err.message || 'Stage failed' });
+      } else {
+        resolve({ ok: true });
+      }
+    });
+  });
+});
+
+ipcMain.handle('git:commit', async (_event, dirPath: string, message: string) => {
+  if (!isPathWithinRepos(dirPath)) return { ok: false, error: 'Path not allowed' };
+  if (typeof message !== 'string' || !message.trim()) {
+    return { ok: false, error: 'Commit message is empty' };
+  }
+  return new Promise<{ ok: boolean; error?: string }>((resolve) => {
+    execFile(
+      'git',
+      ['commit', '-m', message],
+      { cwd: dirPath, timeout: 30000 },
+      (err, stdout, stderr) => {
+        if (err) {
+          const msg = stderr?.trim() || stdout?.trim() || err.message || 'Commit failed';
+          resolve({ ok: false, error: msg });
+        } else {
+          resolve({ ok: true });
+        }
+      }
+    );
+  });
+});
+
+ipcMain.handle('git:push', async (_event, dirPath: string) => {
+  if (!isPathWithinRepos(dirPath)) return { ok: false, error: 'Path not allowed' };
+  return new Promise<{ ok: boolean; error?: string }>((resolve) => {
+    execFile('git', ['push'], { cwd: dirPath, timeout: 120000 }, (err, stdout, stderr) => {
+      if (err) {
+        const msg = stderr?.trim() || stdout?.trim() || err.message || 'Push failed';
+        resolve({ ok: false, error: msg });
+      } else {
+        resolve({ ok: true });
+      }
+    });
+  });
 });
 
 // PTY IPC handlers

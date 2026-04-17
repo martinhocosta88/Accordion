@@ -150,6 +150,13 @@ function SubDirItem({
           onConfirm={() => git.setPullError(null)}
         />
       )}
+      {git.pushError && (
+        <ConfirmDialog
+          message={`Push failed:\n\n${git.pushError}`}
+          confirmLabel="OK"
+          onConfirm={() => git.setPushError(null)}
+        />
+      )}
     </div>
   );
 }
@@ -306,6 +313,13 @@ export function RepoItem({
           message={`Pull failed:\n\n${git.pullError}`}
           confirmLabel="OK"
           onConfirm={() => git.setPullError(null)}
+        />
+      )}
+      {git.pushError && (
+        <ConfirmDialog
+          message={`Push failed:\n\n${git.pushError}`}
+          confirmLabel="OK"
+          onConfirm={() => git.setPushError(null)}
         />
       )}
     </div>

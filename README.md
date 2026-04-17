@@ -24,9 +24,11 @@ Accordion opens a terminal grid where each pane runs Claude Code in a different 
 
 **Four Color Themes** — Switch between Accordion (signature indigo), Carbon (neutral dark), Midnight (deep navy), and Light from the settings dialog. Themes apply instantly to the full UI and terminal colors.
 
-**Git Operations** — Right-click any repo folder to access Fetch, Pull, Switch Branch (with filter search), Revert, or Go to Folder. Pull uses `--ff-only` so diverged branches fail loudly instead of creating surprise merge commits; any error (network failure, non-fast-forward, conflicts) pops up in a dismissible alert with git's full message. Branch names are shown below each folder.
+**Git Operations** — Right-click any repo folder to access Fetch, Pull, Push, Switch Branch (with filter search), Revert, or Go to Folder. Pull uses `--ff-only` so diverged branches fail loudly instead of creating surprise merge commits; any error (network failure, non-fast-forward, conflicts, push rejections) pops up in a dismissible alert with git's full message. Branch names are shown below each folder.
 
-**Zoom Control** — Adjust the UI zoom level from the sidebar footer (50%-200%).
+**Commit from Diff Viewer** — The diff viewer header has a commit message field and Commit / Commit & Push buttons, so you can stage all changes, commit, and optionally push without leaving the review pane. Push failures surface as an error dialog with git's full output.
+
+**Zoom Control** — Adjust the UI zoom level from the sidebar footer (50%-200%). The zoom level, sidebar collapsed state, and window size/position are remembered across app restarts.
 
 **Repo Management** — Add, remove, and reorder repositories in the settings dialog. Drag repos up or down to control their sidebar order.
 
@@ -113,6 +115,8 @@ src/
 | Change theme | Settings > Theme section |
 | Git fetch | Right-click a repo folder > Fetch |
 | Git pull | Right-click a repo folder > Pull (fast-forward only) |
+| Git push | Right-click a repo folder > Push, or Commit & Push from diff viewer |
+| Commit changes | Open the diff viewer, type a message, click Commit |
 | Switch branch | Right-click a repo folder > Switch Branch |
 | Revert changes | Right-click a repo folder > Revert, or click ↺ in the diff header |
 | Open in explorer | Right-click a repo folder > Go to Folder |

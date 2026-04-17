@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { SidePane } from './SidePane';
 import { TerminalGrid } from './TerminalGrid';
 import { SettingsDialog } from './SettingsDialog';
@@ -6,9 +6,10 @@ import { useTerminals } from '../hooks/useTerminals';
 import type { AppConfig } from '../types';
 
 export default function App() {
-  const [config, setConfig] = useState<AppConfig>({ repos: [], theme: 'accordion' as const });
+  const [config, setConfig] = useState<AppConfig>({ repos: [], theme: 'accordion' as const, openTerminals: [] });
   const [showSettings, setShowSettings] = useState(false);
   const [sideCollapsed, setSideCollapsed] = useState(false);
+  const uiStateHydratedRef = useRef(false);
   const [diffTerminalId, setDiffTerminalId] = useState<string | null>(null);
   const {
     terminals,
@@ -22,14 +23,32 @@ export default function App() {
     canAdd,
   } = useTerminals();
 
-  // Load config on mount
+  // Load config on mount — also restore UI state
   useEffect(() => {
     window.electronAPI.config.get().then((cfg) => {
       setConfig(cfg);
       document.documentElement.setAttribute('data-theme', cfg.theme);
+      if (cfg.uiState?.sidebarCollapsed != null) {
+        setSideCollapsed(cfg.uiState.sidebarCollapsed);
+      }
+      if (typeof cfg.uiState?.zoomLevel === 'number') {
+        try {
+          window.zoomAPI.setZoom(cfg.uiState.zoomLevel);
+        } catch {
+          // ignore invalid zoom
+        }
+      }
+      uiStateHydratedRef.current = true;
     }).catch(() => {
+      uiStateHydratedRef.current = true;
     });
   }, []);
+
+  // Persist sidebar collapsed state after hydration
+  useEffect(() => {
+    if (!uiStateHydratedRef.current) return;
+    window.electronAPI.config.setUiState({ sidebarCollapsed: sideCollapsed }).catch(() => {});
+  }, [sideCollapsed]);
 
   const handleOpenTerminal = async (cwd: string, label: string) => {
     await addTerminal(cwd, label);

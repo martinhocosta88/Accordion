@@ -1,9 +1,30 @@
-export const VALID_THEMES = ['accordion', 'carbon', 'midnight', 'light'] as const;
+export const VALID_THEMES = ['accordion', 'carbon', 'midnight', 'light', 'claude'] as const;
 export type ThemeName = (typeof VALID_THEMES)[number];
+
+export interface OpenTerminal {
+  cwd: string;
+  label: string;
+}
+
+export interface WindowGeometry {
+  x?: number;
+  y?: number;
+  width: number;
+  height: number;
+  maximized: boolean;
+}
+
+export interface UiState {
+  sidebarCollapsed?: boolean;
+  zoomLevel?: number;
+  window?: WindowGeometry;
+}
 
 export interface AppConfig {
   repos: string[];
   theme: ThemeName;
+  openTerminals: OpenTerminal[];
+  uiState?: UiState;
 }
 
 export type DirType = 'repo' | 'worktree' | 'dir';
@@ -27,6 +48,8 @@ export interface ElectronAPI {
     removeRepo(path: string): Promise<AppConfig>;
     reorderRepos(repos: string[]): Promise<AppConfig>;
     setTheme(theme: string): Promise<AppConfig>;
+    setOpenTerminals(terminals: OpenTerminal[]): Promise<void>;
+    setUiState(partial: Partial<UiState>): Promise<void>;
   };
   dialog: {
     selectDirectory(): Promise<string | null>;
@@ -49,6 +72,9 @@ export interface ElectronAPI {
     listBranches(dirPath: string): Promise<string[]>;
     checkout(dirPath: string, branch: string): Promise<{ ok: boolean; error?: string }>;
     resetHard(dirPath: string): Promise<boolean>;
+    stageAll(dirPath: string): Promise<{ ok: boolean; error?: string }>;
+    commit(dirPath: string, message: string): Promise<{ ok: boolean; error?: string }>;
+    push(dirPath: string): Promise<{ ok: boolean; error?: string }>;
   };
   pty: {
     create(cwd: string): Promise<string>;

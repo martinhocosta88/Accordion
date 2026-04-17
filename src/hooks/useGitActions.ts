@@ -12,6 +12,8 @@ export function useGitActions(repoPath: string) {
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [pulling, setPulling] = useState(false);
   const [pullError, setPullError] = useState<string | null>(null);
+  const [pushing, setPushing] = useState(false);
+  const [pushError, setPushError] = useState<string | null>(null);
   const [reverting, setReverting] = useState(false);
   const [showRevertConfirm, setShowRevertConfirm] = useState(false);
   const branchRef = useRef(branch);
@@ -66,6 +68,18 @@ export function useGitActions(repoPath: string) {
     }
   }, [repoPath]);
 
+  const handlePush = useCallback(async () => {
+    setPushing(true);
+    setPushError(null);
+    const result = await window.electronAPI.git.push(repoPath);
+    setPushing(false);
+    if (result.ok) {
+      window.dispatchEvent(new CustomEvent('git-changed', { detail: { path: repoPath } }));
+    } else {
+      setPushError(result.error || 'Push failed');
+    }
+  }, [repoPath]);
+
   const handleRevert = useCallback(async () => {
     setReverting(true);
     await window.electronAPI.git.resetHard(repoPath);
@@ -96,6 +110,12 @@ export function useGitActions(repoPath: string) {
       onClick: handlePull,
     },
     {
+      label: pushing ? 'Pushing...' : 'Push',
+      icon: '\u2B71',
+      disabled: pushing,
+      onClick: handlePush,
+    },
+    {
       label: 'Switch Branch',
       icon: '\u2387',
       onClick: () => setShowBranchPicker(true),
@@ -112,7 +132,7 @@ export function useGitActions(repoPath: string) {
       separator: true,
       onClick: handleOpenFolder,
     },
-  ], [fetching, pulling, reverting, handleFetch, handlePull, handleOpenFolder]);
+  ], [fetching, pulling, pushing, reverting, handleFetch, handlePull, handlePush, handleOpenFolder]);
 
   return {
     branch,
@@ -122,6 +142,9 @@ export function useGitActions(repoPath: string) {
     pulling,
     pullError,
     setPullError,
+    pushing,
+    pushError,
+    setPushError,
     contextMenu,
     setContextMenu,
     showBranchPicker,

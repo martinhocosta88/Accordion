@@ -122,14 +122,39 @@ const lightTheme: ThemeDefinition = {
   },
 };
 
+const claudeTheme: ThemeDefinition = {
+  name: 'claude',
+  label: 'Claude',
+  colors: {
+    bgMain: '#1c1917',
+    bgSide: '#171412',
+    bgTerminal: '#12100e',
+    bgPanel: '#211e1a',
+    bgHeader: '#1e1b17',
+    bgHeaderFocused: '#2d2822',
+    border: '#352f28',
+    accent: '#da7756',
+    accentSoft: '#e8a080',
+    textPrimary: '#e8e0d6',
+    textSecondary: '#c8bfb0',
+    textTertiary: '#a09080',
+    textHeader: '#9a8a70',
+    btnHover: '#2d2822',
+    error: '#ff6b55',
+    warning: '#f0c050',
+    selection: '#3d3328',
+  },
+};
+
 export const themes: Record<ThemeName, ThemeDefinition> = {
   accordion: accordionTheme,
   carbon: carbonTheme,
   midnight: midnightTheme,
   light: lightTheme,
+  claude: claudeTheme,
 };
 
-export const themeNames: ThemeName[] = ['accordion', 'carbon', 'midnight', 'light'];
+export const themeNames: ThemeName[] = ['accordion', 'carbon', 'midnight', 'light', 'claude'];
 
 export function getXtermTheme(themeName: ThemeName): {
   background: string;

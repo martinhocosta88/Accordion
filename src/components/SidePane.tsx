@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { RepoItem } from './RepoItem';
 import type { AppConfig } from '../types';
 
@@ -12,10 +12,21 @@ function ZoomControl() {
     return Math.round(Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, raw)) * 100) / 100;
   });
 
+  // Sync the displayed zoom after App.tsx restores a saved zoom factor
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      const raw = window.zoomAPI.getZoom();
+      const clamped = Math.round(Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, raw)) * 100) / 100;
+      setZoom(clamped);
+    }, 0);
+    return () => clearTimeout(handle);
+  }, []);
+
   const applyZoom = (factor: number) => {
     const clamped = Math.round(Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, factor)) * 100) / 100;
     window.zoomAPI.setZoom(clamped);
     setZoom(clamped);
+    window.electronAPI.config.setUiState({ zoomLevel: clamped }).catch(() => {});
   };
 
   return (

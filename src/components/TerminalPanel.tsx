@@ -118,13 +118,19 @@ export function TerminalPanel({
       window.electronAPI.pty.resize(ptyId, terminal.cols, terminal.rows);
     });
 
-    // Handle Ctrl+V paste into terminal via clipboard API
+    // Handle Ctrl+C copy / Ctrl+V paste in terminal via clipboard API
     terminal.attachCustomKeyEventHandler((e) => {
-      if (e.type === 'keydown' && e.key === 'v' && (e.ctrlKey || e.metaKey) && !e.shiftKey) {
-        navigator.clipboard.readText().then((text) => {
-          if (text) window.electronAPI.pty.write(ptyId, text);
-        }).catch(() => {});
-        return false;
+      if (e.type === 'keydown' && (e.ctrlKey || e.metaKey) && !e.shiftKey) {
+        if (e.key === 'c' && terminal.hasSelection()) {
+          navigator.clipboard.writeText(terminal.getSelection()).catch(() => {});
+          return false;
+        }
+        if (e.key === 'v') {
+          navigator.clipboard.readText().then((text) => {
+            if (text) window.electronAPI.pty.write(ptyId, text);
+          }).catch(() => {});
+          return false;
+        }
       }
       return true;
     });
@@ -198,7 +204,7 @@ export function TerminalPanel({
   }, [ptyId]);
 
   return (
-    <div className={`terminal-panel${isFocused ? ' terminal-panel-focused' : ''}${claudeWaiting ? ' terminal-panel-waiting' : ''}`} onMouseDown={() => { onFocus(); if (claudeWaiting) { claudeWaitingRef.current = false; setClaudeWaiting(false); } }}>
+    <div className={`terminal-panel${isFocused ? ' terminal-panel-focused' : ''}`} onMouseDown={() => { onFocus(); if (claudeWaiting) { claudeWaitingRef.current = false; setClaudeWaiting(false); } }}>
       <div
         className={`terminal-header${isFocused ? ' terminal-header-focused' : ''}${claudeWaiting ? ' terminal-header-waiting' : ''}${dragOverId === terminalId ? ' terminal-header-drop-target' : ''}`}
         draggable={!dragDisabled}

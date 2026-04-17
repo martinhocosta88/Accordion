@@ -87,6 +87,10 @@ export function DiffPanel({ cwd, label, ptyId, onClose }: DiffPanelProps) {
   const [commentTarget, setCommentTarget] = useState<CommentTarget | null>(null);
   const [commentText, setCommentText] = useState('');
   const [showRevertConfirm, setShowRevertConfirm] = useState(false);
+  const [commitMessage, setCommitMessage] = useState('');
+  const [committing, setCommitting] = useState(false);
+  const [commitError, setCommitError] = useState<string | null>(null);
+  const [hasSentFeedback, setHasSentFeedback] = useState(false);
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
   const textSelectHandledRef = useRef(false);
 
@@ -211,8 +215,40 @@ export function DiffPanel({ cwd, label, ptyId, onClose }: DiffPanelProps) {
 
     safePtyWrite(message + '\n');
 
+    setHasSentFeedback(true);
     setCommentTarget(null);
     setCommentText('');
+  };
+
+  const doCommit = async (alsoPush: boolean) => {
+    const message = commitMessage.trim();
+    if (!message || committing || files.length === 0) return;
+    setCommitting(true);
+    setCommitError(null);
+    try {
+      const stageResult = await window.electronAPI.git.stageAll(cwd);
+      if (!stageResult.ok) {
+        setCommitError(stageResult.error || 'Failed to stage changes');
+        return;
+      }
+      const commitResult = await window.electronAPI.git.commit(cwd, message);
+      if (!commitResult.ok) {
+        setCommitError(commitResult.error || 'Commit failed');
+        return;
+      }
+      if (alsoPush) {
+        const pushResult = await window.electronAPI.git.push(cwd);
+        if (!pushResult.ok) {
+          setCommitError(pushResult.error || 'Push failed');
+          // The commit succeeded — fall through to refresh so the diff clears
+        }
+      }
+      setCommitMessage('');
+      window.dispatchEvent(new CustomEvent('git-changed', { detail: { path: cwd } }));
+      refresh();
+    } finally {
+      setCommitting(false);
+    }
   };
 
   const handleCommentKeyDown = (e: React.KeyboardEvent) => {
@@ -246,6 +282,32 @@ export function DiffPanel({ cwd, label, ptyId, onClose }: DiffPanelProps) {
             {'\u2715'}
           </button>
         </div>
+      </div>
+      <div className="diff-commit-bar">
+        <input
+          type="text"
+          className="diff-commit-input"
+          placeholder="Commit message..."
+          value={commitMessage}
+          onChange={(e) => setCommitMessage(e.target.value)}
+          disabled={committing || files.length === 0}
+        />
+        <button
+          className="diff-commit-btn"
+          onClick={() => doCommit(false)}
+          disabled={committing || !commitMessage.trim() || files.length === 0}
+          title="Stage all changes and commit"
+        >
+          {committing ? 'Working...' : 'Commit'}
+        </button>
+        <button
+          className="diff-commit-btn diff-commit-btn-push"
+          onClick={() => doCommit(true)}
+          disabled={committing || !commitMessage.trim() || files.length === 0}
+          title="Stage, commit, and push"
+        >
+          {committing ? 'Working...' : 'Commit & Push'}
+        </button>
       </div>
       <div className="diff-body">
         {loading && <div className="diff-loading">Loading diff...</div>}
@@ -350,6 +412,8 @@ export function DiffPanel({ cwd, label, ptyId, onClose }: DiffPanelProps) {
       <div className="diff-footer">
         <button
           className="diff-finalize-btn"
+          disabled={!hasSentFeedback}
+          title={hasSentFeedback ? undefined : 'Send at least one comment before finalizing'}
           onClick={async () => {
             await safePtyWrite(
               'I have finished reviewing the diff. Please apply all the feedback I provided above.\r'
@@ -371,6 +435,14 @@ export function DiffPanel({ cwd, label, ptyId, onClose }: DiffPanelProps) {
             refresh();
           }}
           onCancel={() => setShowRevertConfirm(false)}
+        />
+      )}
+      {commitError && (
+        <ConfirmDialog
+          message={`Git operation failed:\n\n${commitError}`}
+          confirmLabel="OK"
+          onConfirm={() => setCommitError(null)}
+          onCancel={() => setCommitError(null)}
         />
       )}
     </div>
