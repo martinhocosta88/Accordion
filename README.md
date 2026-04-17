@@ -24,7 +24,9 @@ Accordion opens a terminal grid where each pane runs Claude Code in a different 
 
 **Four Color Themes** — Switch between Accordion (signature indigo), Carbon (neutral dark), Midnight (deep navy), and Light from the settings dialog. Themes apply instantly to the full UI and terminal colors.
 
-**Git Operations** — Right-click any repo folder to access Fetch, Pull, Push, Switch Branch (with filter search), Revert, or Go to Folder. Pull uses `--ff-only` so diverged branches fail loudly instead of creating surprise merge commits; any error (network failure, non-fast-forward, conflicts, push rejections) pops up in a dismissible alert with git's full message. Branch names are shown below each folder.
+**Git Operations** — Right-click any repo folder to access Fetch, Pull, Push, Switch Branch (with filter search), Revert, Open in VS Code, or Go to Folder. Pull uses `--ff-only` so diverged branches fail loudly instead of creating surprise merge commits; any error (network failure, non-fast-forward, conflicts, push rejections) pops up in a dismissible alert with git's full message. Branch names are shown below each folder.
+
+**Open in VS Code** — Launch VS Code against any repo folder from the side-pane context menu or the `<>` button in the terminal header. If the folder contains a single `*.code-workspace` file, Accordion opens that workspace instead of the plain folder. If multiple workspace files exist, a picker dialog lets you choose between the folder and each workspace. Requires the `code` CLI on `PATH` (the default VS Code installer option on Windows).
 
 **Commit from Diff Viewer** — The diff viewer header has a commit message field and Commit / Commit & Push buttons, so you can stage all changes, commit, and optionally push without leaving the review pane. Push failures surface as an error dialog with git's full output.
 
@@ -119,6 +121,7 @@ src/
 | Commit changes | Open the diff viewer, type a message, click Commit |
 | Switch branch | Right-click a repo folder > Switch Branch |
 | Revert changes | Right-click a repo folder > Revert, or click ↺ in the diff header |
+| Open in VS Code | Right-click a repo folder > Open in VS Code, or click `<>` in the terminal header |
 | Open in explorer | Right-click a repo folder > Go to Folder |
 | Collapse sidebar | Click the arrow in the side pane header |
 | Enable Claude highlighting | Add hooks to `~/.claude/settings.json` ([guide](docs/claude-terminal-highlighting.md)) |

@@ -56,6 +56,8 @@ export interface ElectronAPI {
   };
   shell: {
     openPath(dirPath: string): Promise<void>;
+    listVSCodeWorkspaces(dirPath: string): Promise<string[]>;
+    openInVSCode(targetPath: string): Promise<{ ok: boolean; error?: string }>;
   };
   fs: {
     listSubdirectories(dirPath: string): Promise<SubDirectory[]>;

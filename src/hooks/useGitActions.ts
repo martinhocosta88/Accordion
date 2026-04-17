@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useOpenInVSCode } from './useOpenInVSCode';
+import type { MenuItem } from '../components/ContextMenu';
 import type { AheadBehind } from '../types';
 
 const BRANCH_REFRESH_INTERVAL = 30_000; // 30 seconds
@@ -96,7 +98,9 @@ export function useGitActions(repoPath: string) {
     window.electronAPI.shell.openPath(repoPath);
   }, [repoPath]);
 
-  const contextMenuItems = useMemo(() => [
+  const vscode = useOpenInVSCode(repoPath);
+
+  const contextMenuItems = useMemo<MenuItem[]>(() => [
     {
       label: fetching ? 'Fetching...' : 'Fetch',
       icon: '\u21BB',
@@ -127,12 +131,17 @@ export function useGitActions(repoPath: string) {
       onClick: () => setShowRevertConfirm(true),
     },
     {
-      label: 'Go to Folder',
-      icon: '\uD83D\uDCC2',
+      label: 'Open in VS Code',
+      icon: '<>',
       separator: true,
+      onClick: vscode.openInVSCode,
+    },
+    {
+      label: 'Go to Folder',
+      icon: '\u25AD',
       onClick: handleOpenFolder,
     },
-  ], [fetching, pulling, pushing, reverting, handleFetch, handlePull, handlePush, handleOpenFolder]);
+  ], [fetching, pulling, pushing, reverting, handleFetch, handlePull, handlePush, handleOpenFolder, vscode.openInVSCode]);
 
   return {
     branch,
@@ -155,5 +164,6 @@ export function useGitActions(repoPath: string) {
     handleRevert,
     handleBranchChanged,
     contextMenuItems,
+    vscode,
   };
 }

@@ -3,6 +3,7 @@ import { ContextMenu } from './ContextMenu';
 import type { MenuItem } from './ContextMenu';
 import { BranchPicker } from './BranchPicker';
 import { ConfirmDialog } from './ConfirmDialog';
+import { VSCodeWorkspacePicker } from './VSCodeWorkspacePicker';
 import { useGitActions } from '../hooks/useGitActions';
 import type { DirType, SubDirectory } from '../types';
 
@@ -155,6 +156,21 @@ function SubDirItem({
           message={`Push failed:\n\n${git.pushError}`}
           confirmLabel="OK"
           onConfirm={() => git.setPushError(null)}
+        />
+      )}
+      {git.vscode.pickerWorkspaces && (
+        <VSCodeWorkspacePicker
+          folderPath={sub.path}
+          workspaces={git.vscode.pickerWorkspaces}
+          onPick={git.vscode.pickWorkspace}
+          onCancel={git.vscode.closePicker}
+        />
+      )}
+      {git.vscode.openError && (
+        <ConfirmDialog
+          message={`Failed to open VS Code:\n\n${git.vscode.openError}`}
+          confirmLabel="OK"
+          onConfirm={git.vscode.clearOpenError}
         />
       )}
     </div>
@@ -320,6 +336,21 @@ export function RepoItem({
           message={`Push failed:\n\n${git.pushError}`}
           confirmLabel="OK"
           onConfirm={() => git.setPushError(null)}
+        />
+      )}
+      {git.vscode.pickerWorkspaces && (
+        <VSCodeWorkspacePicker
+          folderPath={repoPath}
+          workspaces={git.vscode.pickerWorkspaces}
+          onPick={git.vscode.pickWorkspace}
+          onCancel={git.vscode.closePicker}
+        />
+      )}
+      {git.vscode.openError && (
+        <ConfirmDialog
+          message={`Failed to open VS Code:\n\n${git.vscode.openError}`}
+          confirmLabel="OK"
+          onConfirm={git.vscode.clearOpenError}
         />
       )}
     </div>

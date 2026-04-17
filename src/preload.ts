@@ -18,6 +18,10 @@ const api: ElectronAPI = {
   },
   shell: {
     openPath: (dirPath: string) => ipcRenderer.invoke('shell:open-path', dirPath),
+    listVSCodeWorkspaces: (dirPath: string) =>
+      ipcRenderer.invoke('shell:list-vscode-workspaces', dirPath),
+    openInVSCode: (targetPath: string) =>
+      ipcRenderer.invoke('shell:open-in-vscode', targetPath),
   },
   fs: {
     listSubdirectories: (dirPath: string) =>

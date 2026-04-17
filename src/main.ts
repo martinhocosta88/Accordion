@@ -1,7 +1,7 @@
 import { app, BrowserWindow, Menu, ipcMain, dialog, shell, screen } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
-import { execFile } from 'child_process';
+import { execFile, spawn } from 'child_process';
 import { readConfig, addRepo, removeRepo, reorderRepos, setTheme, setOpenTerminals, setUiState } from './main/config-manager';
 import { parseAheadBehind } from './main/git-helpers';
 import {
@@ -171,6 +171,48 @@ ipcMain.handle('dialog:select-directory', async () => {
 ipcMain.handle('shell:open-path', async (_event, dirPath: string) => {
   if (!isPathWithinRepos(dirPath)) return;
   shell.openPath(path.resolve(dirPath));
+});
+
+ipcMain.handle('shell:list-vscode-workspaces', async (_event, dirPath: string) => {
+  if (!isPathWithinRepos(dirPath)) return [];
+  try {
+    const entries = await fs.promises.readdir(dirPath, { withFileTypes: true });
+    return entries
+      .filter((e) => e.isFile() && e.name.endsWith('.code-workspace'))
+      .map((e) => path.join(dirPath, e.name));
+  } catch {
+    return [];
+  }
+});
+
+ipcMain.handle('shell:open-in-vscode', async (_event, targetPath: string) => {
+  if (!isPathWithinRepos(targetPath)) return { ok: false, error: 'Path not allowed' };
+  const resolved = path.resolve(targetPath);
+  // Reject paths with shell metacharacters that could break quoting under shell:true on Windows
+  if (/["\r\n]/.test(resolved)) return { ok: false, error: 'Path contains unsupported characters' };
+  const isWin = process.platform === 'win32';
+  const cmd = isWin ? 'code.cmd' : 'code';
+  const args = isWin ? [`"${resolved}"`] : [resolved];
+  return new Promise<{ ok: boolean; error?: string }>((resolve) => {
+    const child = spawn(cmd, args, {
+      shell: isWin,
+      detached: true,
+      stdio: 'ignore',
+      windowsHide: true,
+    });
+    let settled = false;
+    child.on('error', (err) => {
+      if (settled) return;
+      settled = true;
+      resolve({ ok: false, error: err.message || 'Failed to launch VS Code' });
+    });
+    child.on('spawn', () => {
+      if (settled) return;
+      settled = true;
+      child.unref();
+      resolve({ ok: true });
+    });
+  });
 });
 
 // Config cache to avoid reading from disk on every IPC call

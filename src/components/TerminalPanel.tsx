@@ -4,6 +4,9 @@ import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
 import { getXtermTheme } from '../lib/themes';
 import { usePtyData } from '../hooks/usePtyData';
+import { useOpenInVSCode } from '../hooks/useOpenInVSCode';
+import { VSCodeWorkspacePicker } from './VSCodeWorkspacePicker';
+import { ConfirmDialog } from './ConfirmDialog';
 import type { ThemeName } from '../types';
 
 const DIFF_COUNT_INTERVAL = 15_000;
@@ -51,6 +54,7 @@ export function TerminalPanel({
   const [changedFiles, setChangedFiles] = useState(0);
   const [claudeWaiting, setClaudeWaiting] = useState(false);
   const claudeWaitingRef = useRef(false);
+  const vscode = useOpenInVSCode(cwd);
 
   // Poll changed file count
   useEffect(() => {
@@ -233,10 +237,17 @@ export function TerminalPanel({
           </button>
           <button
             className="terminal-btn"
+            onClick={vscode.openInVSCode}
+            title="Open in VS Code"
+          >
+            {'<>'}
+          </button>
+          <button
+            className="terminal-btn"
             onClick={onToggleMaximize}
             title={isMaximized ? 'Restore' : 'Maximize'}
           >
-            {isMaximized ? '\u29C9' : '\u25A1'}
+            {isMaximized ? '\u29C9' : '\u26F6'}
           </button>
           <button
             className="terminal-btn terminal-btn-close"
@@ -248,6 +259,21 @@ export function TerminalPanel({
         </div>
       </div>
       <div className="terminal-body" ref={containerRef} />
+      {vscode.pickerWorkspaces && (
+        <VSCodeWorkspacePicker
+          folderPath={cwd}
+          workspaces={vscode.pickerWorkspaces}
+          onPick={vscode.pickWorkspace}
+          onCancel={vscode.closePicker}
+        />
+      )}
+      {vscode.openError && (
+        <ConfirmDialog
+          message={`Failed to open VS Code:\n\n${vscode.openError}`}
+          confirmLabel="OK"
+          onConfirm={vscode.clearOpenError}
+        />
+      )}
     </div>
   );
 }
