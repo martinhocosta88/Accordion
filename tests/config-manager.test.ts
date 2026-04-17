@@ -20,7 +20,7 @@ describe('config-manager', () => {
   describe('readConfig', () => {
     it('returns default config when file does not exist', () => {
       const config = readConfig(configPath);
-      expect(config).toEqual({ repos: [], theme: 'accordion', openTerminals: [] });
+      expect(config).toEqual({ repos: [], theme: 'claude', openTerminals: [] });
     });
 
     it('creates config file when it does not exist', () => {
@@ -37,13 +37,13 @@ describe('config-manager', () => {
     it('returns default config when file is corrupted JSON', () => {
       fs.writeFileSync(configPath, 'not json');
       const config = readConfig(configPath);
-      expect(config).toEqual({ repos: [], theme: 'accordion', openTerminals: [] });
+      expect(config).toEqual({ repos: [], theme: 'claude', openTerminals: [] });
     });
 
     it('returns default config when repos is not an array', () => {
       fs.writeFileSync(configPath, JSON.stringify({ repos: 'bad' }));
       const config = readConfig(configPath);
-      expect(config).toEqual({ repos: [], theme: 'accordion', openTerminals: [] });
+      expect(config).toEqual({ repos: [], theme: 'claude', openTerminals: [] });
     });
 
     it('reads openTerminals from an existing config file', () => {
@@ -87,7 +87,7 @@ describe('config-manager', () => {
     it('returns default config with theme when file has no theme field', () => {
       fs.writeFileSync(configPath, JSON.stringify({ repos: ['C:\\test'] }));
       const config = readConfig(configPath);
-      expect(config.theme).toBe('accordion');
+      expect(config.theme).toBe('claude');
     });
 
     it('preserves existing theme from config file', () => {

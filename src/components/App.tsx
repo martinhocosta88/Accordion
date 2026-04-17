@@ -6,7 +6,7 @@ import { useTerminals } from '../hooks/useTerminals';
 import type { AppConfig } from '../types';
 
 export default function App() {
-  const [config, setConfig] = useState<AppConfig>({ repos: [], theme: 'accordion' as const, openTerminals: [] });
+  const [config, setConfig] = useState<AppConfig>({ repos: [], theme: 'claude' as const, openTerminals: [] });
   const [showSettings, setShowSettings] = useState(false);
   const [sideCollapsed, setSideCollapsed] = useState(false);
   const uiStateHydratedRef = useRef(false);

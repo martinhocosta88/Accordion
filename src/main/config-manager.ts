@@ -3,7 +3,7 @@ import * as path from 'path';
 import { VALID_THEMES } from '../types';
 import type { AppConfig, OpenTerminal, ThemeName, UiState, WindowGeometry } from '../types';
 
-const defaultConfig = (): AppConfig => ({ repos: [], theme: 'accordion', openTerminals: [] });
+const defaultConfig = (): AppConfig => ({ repos: [], theme: 'claude', openTerminals: [] });
 
 function sanitizeUiState(value: unknown): UiState | undefined {
   if (!value || typeof value !== 'object') return undefined;
@@ -55,7 +55,7 @@ export function readConfig(configPath: string): AppConfig {
       return defaultConfig();
     }
     if (!config.theme || !(VALID_THEMES as readonly string[]).includes(config.theme)) {
-      config.theme = 'accordion';
+      config.theme = 'claude';
     }
     config.openTerminals = sanitizeOpenTerminals(config.openTerminals);
     const ui = sanitizeUiState((config as AppConfig).uiState);

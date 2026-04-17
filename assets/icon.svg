@@ -1,17 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
-  <!-- Dark background with rounded corners -->
-  <rect width="256" height="256" rx="48" ry="48" fill="#1a1a2e"/>
+  <!-- Console window background (rounded corners, dark terminal look) -->
+  <rect width="256" height="256" rx="48" ry="48" fill="#1c1917"/>
 
-  <!-- Five chevrons fading left (0.3 opacity) to right (1.0 opacity) -->
-  <!-- Using a monospace-style > chevron drawn with paths -->
-  <!-- Chevron 1: leftmost, most faded -->
-  <text x="28" y="152" font-family="monospace, 'Courier New', Courier" font-size="88" font-weight="bold" fill="#7c9cff" fill-opacity="0.3" letter-spacing="0">&#62;</text>
-  <!-- Chevron 2 -->
-  <text x="68" y="152" font-family="monospace, 'Courier New', Courier" font-size="88" font-weight="bold" fill="#7c9cff" fill-opacity="0.475" letter-spacing="0">&#62;</text>
-  <!-- Chevron 3 -->
-  <text x="108" y="152" font-family="monospace, 'Courier New', Courier" font-size="88" font-weight="bold" fill="#7c9cff" fill-opacity="0.65" letter-spacing="0">&#62;</text>
-  <!-- Chevron 4 -->
-  <text x="148" y="152" font-family="monospace, 'Courier New', Courier" font-size="88" font-weight="bold" fill="#7c9cff" fill-opacity="0.825" letter-spacing="0">&#62;</text>
-  <!-- Chevron 5: rightmost, fully opaque -->
-  <text x="188" y="152" font-family="monospace, 'Courier New', Courier" font-size="88" font-weight="bold" fill="#7c9cff" fill-opacity="1.0" letter-spacing="0">&#62;</text>
+  <!-- Mascot body: tall rounded capsule in Claude orange -->
+  <rect x="60" y="116" width="136" height="104" rx="26" fill="#da7756"/>
+
+  <!-- Mascot head: rounded square sitting on the body -->
+  <rect x="76" y="44" width="104" height="96" rx="34" fill="#da7756"/>
+
+  <!-- Neck seam: subtle darker line where head meets body -->
+  <rect x="96" y="128" width="64" height="6" rx="3" fill="#1c1917" fill-opacity="0.25"/>
+
+  <!-- Eyes: two dark ovals, friendly chat-bot expression -->
+  <ellipse cx="108" cy="92" rx="8" ry="10" fill="#1c1917"/>
+  <ellipse cx="148" cy="92" rx="8" ry="10" fill="#1c1917"/>
+
+  <!-- Small cheek highlight for warmth -->
+  <circle cx="102" cy="112" r="4" fill="#1c1917" fill-opacity="0.18"/>
+  <circle cx="154" cy="112" r="4" fill="#1c1917" fill-opacity="0.18"/>
+
+  <!-- >> prompt chevrons on the body -->
+  <g stroke="#1c1917" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M 92 156 L 118 176 L 92 196"/>
+    <path d="M 132 156 L 158 176 L 132 196"/>
+  </g>
 </svg>
