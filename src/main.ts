@@ -1,6 +1,7 @@
 import { app, BrowserWindow, Menu, ipcMain, dialog, shell, screen } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as os from 'os';
 import { execFile, spawn } from 'child_process';
 import { readConfig, addRepo, removeRepo, reorderRepos, setTheme, setOpenTerminals, setUiState } from './main/config-manager';
 import { parseAheadBehind } from './main/git-helpers';
@@ -130,6 +131,17 @@ function createWindow() {
 }
 
 // Config IPC handlers
+function detectWindowsBuild(): number {
+  if (process.platform !== 'win32') return 0;
+  const match = os.release().match(/^\d+\.\d+\.(\d+)/);
+  return match ? parseInt(match[1], 10) : 0;
+}
+const WINDOWS_BUILD = detectWindowsBuild();
+
+ipcMain.on('platform:windows-build', (event) => {
+  event.returnValue = WINDOWS_BUILD;
+});
+
 ipcMain.handle('config:get', () => readConfig(CONFIG_PATH));
 ipcMain.handle('config:add-repo', (_event, repoPath: string) => {
   invalidateConfigCache();

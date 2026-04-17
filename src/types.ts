@@ -42,6 +42,9 @@ export interface SubDirectory {
 }
 
 export interface ElectronAPI {
+  platform: {
+    windowsBuild: number;
+  };
   config: {
     get(): Promise<AppConfig>;
     addRepo(path: string): Promise<AppConfig>;

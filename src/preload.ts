@@ -1,7 +1,12 @@
 import { contextBridge, ipcRenderer, webFrame } from 'electron';
 import type { ElectronAPI, OpenTerminal, UiState } from './types';
 
+const WINDOWS_BUILD: number = ipcRenderer.sendSync('platform:windows-build');
+
 const api: ElectronAPI = {
+  platform: {
+    windowsBuild: WINDOWS_BUILD,
+  },
   config: {
     get: () => ipcRenderer.invoke('config:get'),
     addRepo: (path: string) => ipcRenderer.invoke('config:add-repo', path),

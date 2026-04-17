@@ -51,6 +51,8 @@ export function TerminalPanel({
   const containerRef = useRef<HTMLDivElement>(null);
   const terminalRef = useRef<Terminal | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
+  const lastSentDimsRef = useRef<{ cols: number; rows: number } | null>(null);
+  const resizeTimerRef = useRef<number | null>(null);
   const [changedFiles, setChangedFiles] = useState(0);
   const [claudeWaiting, setClaudeWaiting] = useState(false);
   const claudeWaitingRef = useRef(false);
@@ -106,7 +108,7 @@ export function TerminalPanel({
       theme: getXtermTheme(theme),
       windowsPty: {
         backend: 'conpty',
-        buildNumber: 19041,
+        buildNumber: window.electronAPI.platform.windowsBuild || 19041,
       },
     });
 
@@ -119,6 +121,7 @@ export function TerminalPanel({
 
     const rafId = requestAnimationFrame(() => {
       fitAddon.fit();
+      lastSentDimsRef.current = { cols: terminal.cols, rows: terminal.rows };
       window.electronAPI.pty.resize(ptyId, terminal.cols, terminal.rows);
     });
 
@@ -175,7 +178,10 @@ export function TerminalPanel({
     }
   }, [theme]);
 
-  // Re-fit on container size changes
+  // Re-fit on container size changes. pty.resize is debounced so the shell
+  // isn't spammed with SIGWINCH during a drag (which causes prompt duplication
+  // on Windows ConPTY). Skip entirely when dimensions are unchanged — pure
+  // vertical drags typically don't change cols and don't need to hit the pty.
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -189,7 +195,18 @@ export function TerminalPanel({
         if (clientWidth < 10 || clientHeight < 10) return;
         const term = terminalRef.current;
         fitAddonRef.current.fit();
-        window.electronAPI.pty.resize(ptyId, term.cols, term.rows);
+        const cols = term.cols;
+        const rows = term.rows;
+        const last = lastSentDimsRef.current;
+        if (last && last.cols === cols && last.rows === rows) return;
+        if (resizeTimerRef.current != null) {
+          window.clearTimeout(resizeTimerRef.current);
+        }
+        resizeTimerRef.current = window.setTimeout(() => {
+          resizeTimerRef.current = null;
+          lastSentDimsRef.current = { cols, rows };
+          window.electronAPI.pty.resize(ptyId, cols, rows);
+        }, 150);
       }
     };
 
@@ -204,6 +221,10 @@ export function TerminalPanel({
     return () => {
       disposed = true;
       observer.disconnect();
+      if (resizeTimerRef.current != null) {
+        window.clearTimeout(resizeTimerRef.current);
+        resizeTimerRef.current = null;
+      }
     };
   }, [ptyId]);
 
