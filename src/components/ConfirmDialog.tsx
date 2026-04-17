@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useEscapeKey } from '../hooks/useEscapeKey';
 
 interface ConfirmDialogProps {
   message: string;
@@ -20,13 +21,7 @@ export function ConfirmDialog({
     firstBtnRef.current?.focus();
   }, []);
 
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') dismiss();
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [dismiss]);
+  useEscapeKey(dismiss);
 
   return (
     <div className="settings-overlay" onClick={dismiss}>

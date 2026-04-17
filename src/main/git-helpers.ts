@@ -1,8 +1,4 @@
-export interface AheadBehind {
-  ahead: number;
-  behind: number;
-  hasUpstream: boolean;
-}
+import type { AheadBehind } from '../types';
 
 export function parseAheadBehind(stdout: string, stderr: string | null): AheadBehind {
   if (stderr && /no upstream|unknown revision|@\{upstream\}/i.test(stderr)) {

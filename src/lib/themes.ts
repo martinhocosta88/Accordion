@@ -1,6 +1,6 @@
 import type { ThemeName } from '../types';
 
-export interface ThemeColors {
+interface ThemeColors {
   bgMain: string;
   bgSide: string;
   bgTerminal: string;
@@ -20,7 +20,7 @@ export interface ThemeColors {
   selection: string;
 }
 
-export interface ThemeDefinition {
+interface ThemeDefinition {
   name: ThemeName;
   label: string;
   colors: ThemeColors;

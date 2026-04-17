@@ -24,24 +24,26 @@ const CONFIG_PATH = path.join(
 let mainWindow: BrowserWindow | null = null;
 let geometrySaveTimer: NodeJS.Timeout | null = null;
 
+function persistWindowGeometry() {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  const maximized = mainWindow.isMaximized();
+  const bounds = maximized ? mainWindow.getNormalBounds() : mainWindow.getBounds();
+  invalidateConfigCache();
+  setUiState(CONFIG_PATH, {
+    window: {
+      x: bounds.x,
+      y: bounds.y,
+      width: bounds.width,
+      height: bounds.height,
+      maximized,
+    },
+  });
+}
+
 function scheduleGeometrySave() {
   if (!mainWindow) return;
   if (geometrySaveTimer) clearTimeout(geometrySaveTimer);
-  geometrySaveTimer = setTimeout(() => {
-    if (!mainWindow || mainWindow.isDestroyed()) return;
-    const maximized = mainWindow.isMaximized();
-    const bounds = maximized ? mainWindow.getNormalBounds() : mainWindow.getBounds();
-    invalidateConfigCache();
-    setUiState(CONFIG_PATH, {
-      window: {
-        x: bounds.x,
-        y: bounds.y,
-        width: bounds.width,
-        height: bounds.height,
-        maximized,
-      },
-    });
-  }, 500);
+  geometrySaveTimer = setTimeout(persistWindowGeometry, 500);
 }
 
 function isPointOnAnyDisplay(x: number, y: number): boolean {
@@ -99,20 +101,7 @@ function createWindow() {
   mainWindow.on('unmaximize', scheduleGeometrySave);
   mainWindow.on('close', () => {
     if (geometrySaveTimer) clearTimeout(geometrySaveTimer);
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      const maximized = mainWindow.isMaximized();
-      const bounds = maximized ? mainWindow.getNormalBounds() : mainWindow.getBounds();
-      invalidateConfigCache();
-      setUiState(CONFIG_PATH, {
-        window: {
-          x: bounds.x,
-          y: bounds.y,
-          width: bounds.width,
-          height: bounds.height,
-          maximized,
-        },
-      });
-    }
+    persistWindowGeometry();
   });
 
   // Keep clipboard accelerators (Ctrl+C/V/X/A) working while hiding the menu bar

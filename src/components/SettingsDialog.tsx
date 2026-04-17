@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
 import type { AppConfig } from '../types';
 import { themes, themeNames } from '../lib/themes';
+import { useEscapeKey } from '../hooks/useEscapeKey';
 
 interface SettingsDialogProps {
   config: AppConfig;
@@ -13,13 +13,7 @@ export function SettingsDialog({
   onClose,
   onConfigChange,
 }: SettingsDialogProps) {
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  useEscapeKey(onClose);
 
   const handleThemeChange = async (themeName: string) => {
     const newConfig = await window.electronAPI.config.setTheme(themeName);
